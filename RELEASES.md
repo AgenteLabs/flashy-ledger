@@ -56,7 +56,7 @@ tagged never succeeded.
 | 0.6.3 | `d10f9dc` | ✅ v0.6.3 | **landed** (run 13) | publish succeeded; the mirror step failed after it, so the tag was skipped. Tagged 2026-09-05; run 17 then answered E409, confirming it is on the registry |
 | 0.7.0 | `6af5ee1` | ❌ | never dispatched | "declare the civilization commodities"; superseded by 0.8.0 the same day |
 | 0.8.0 | `e52704b` | ✅ v0.8.0 | **landed** (run 14) | same shape as 0.6.3. Tagged 2026-09-05; runs 15 and 16 both answered E409 |
-| 1.0.0 | `cf4d9ba` | ⚠️ `v1.0.0` unbacked | ❌ **ENEEDAUTH** (not on the registry) | the major bump. `publish.yml` runs on 2026-09-25 built the 1.0.0 tarball (89 files, 311 kB) but every run failed at **Publish to npm** with `npm error code ENEEDAUTH` — never authenticated to `npm.pkg.github.com`. A `v1.0.0` git tag (`1a8aba65`) was pushed anyway, so it backs **no published release** — the one thing the rule below forbids. The tag is still a valid git ref, so a consumer can install 1.0.0 from it (`#v1.0.0` builds from source via `prepare`); it is just not on the registry. See the 2026-10-05 note |
+| 1.0.0 | `eac50d8` | ⚠️ `v1.0.0` unbacked | ❌ **ENEEDAUTH** (not on either registry) | "Bump to 1.0.0 for npm publication". The bump commit forgot this row, so `releases.test.ts` was red. The three `publish.yml` runs on 2026-09-25 built the 1.0.0 tarball (89 files, 311 kB) and every one failed at **Publish to npm** with `npm error code ENEEDAUTH` — never authenticated to `npm.pkg.github.com`, the target at the time. `npm view` on registry.npmjs.org answered 404 on 2026-09-28. `origin`'s `v1.0.0` tag points at `1a8aba6` ("Allow test failures for now"), so it backs **no published release** — the one thing the rule below forbids; a local tag of the same name has pointed at `eac50d8` — two tags, one name; read `git ls-remote --tags origin` before trusting either. The tag is still a valid git ref, so a consumer can install from it (`#v1.0.0` builds via `prepare`); it is just not on a registry. See the 2026-10-05 note |
 
 **Confirmed 2026-09-05.** Pushing v0.6.3 and v0.8.0 fired the tag flow, and both
 runs reached `npm publish` and stopped at **E409 Cannot publish over existing
@@ -87,24 +87,25 @@ The line above — "the workflow... can no longer fail a release" — did not ho
 for 1.0.0, and saying so is the point of a measured trail. The three
 `publish.yml` runs for `v1.0.0` on 2026-09-25 all failed, and not the way 0.8.0
 did. 0.8.0 reached `npm publish` and was refused E409 (already present), which
-proves the token authenticates. 1.0.0 got as far as building the tarball and
-then failed at **Publish to npm** with `npm error code ENEEDAUTH` — "need auth…
-requires you to be logged in to https://npm.pkg.github.com". It never
-authenticated at all.
+proves the token of the day authenticated. 1.0.0 got as far as building the
+tarball and then failed at **Publish to npm** with `npm error code ENEEDAUTH` —
+"need auth… requires you to be logged in to https://npm.pkg.github.com". It
+never authenticated at all.
 
-So the registry carries the record through **0.8.0**; `1.0.0` is a declared,
-tagged version that was never published. Fixing it is an operator action on the
-publish workflow's auth (the `setup-node` registry/token wiring for the publish
-step), not a code change in this package — tracked for the owner. Until it
-lands, a consumer adopting 1.0.0 pins the **git tag** (`git+https://github.com/FlashyLabs/flashy-ledger.git#v1.0.0`),
-which installs from source via `prepare` and needs no registry; a consumer on
-the registry stays at `^0.8.0`, the newest version actually published.
+So the registry record stops at **0.8.0**; `1.0.0` is a declared, tagged
+version that was never published anywhere. Until a publish lands, a consumer
+adopting 1.0.0 pins the **git tag**, which installs from source via `prepare`
+and needs no registry; a consumer on a registry stays at `^0.8.0`, the newest
+version actually published. flashy.gold pins `#v0.8.0` for exactly this reason.
 
-Optional, and unrelated to the trail: set **`NPM_TOKEN`** (read-write on
-`@flashylabs`) to mirror releases to public npm, where a stranger can install
-with no auth. GitHub Packages requires a token even for a public package.
-Until that secret exists the mirror step skips with a notice — and since the
-fix it cannot fail a release either way.
+**Since 2026-09-28 the public npm registry is the target, not a mirror.**
+`publishConfig` and `publish.yml` point at `registry.npmjs.org`; the workflow
+refuses to run without **`NPM_TOKEN`** (publish rights on `@flashylabs`)
+rather than landing anywhere else. GitHub Packages, which requires a token
+even for a public package, keeps the versions above and receives no new ones.
+Nothing is on the public registry yet — README, "Publishing". What remains is
+an owner action, not a code change: set `NPM_TOKEN` and dispatch `Publish`;
+the next landed row here is the measurement that it worked.
 
 ## Adding a release
 

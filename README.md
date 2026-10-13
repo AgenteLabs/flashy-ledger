@@ -23,11 +23,38 @@ randomness. Everything that touches storage sits behind one interface, which is
 the entire reason this can move onto different infrastructure — including a
 chain — without its rules changing.
 
-## Install and check
+### When to use alone
+
+- You need a battle-tested financial settlement layer
+- Your system must guarantee idempotent replay
+- You require audit-trail immutability
+- You're building multi-asset or cross-chain rails
+
+### In the Flashy ecosystem
+
+- Powered by [@flashylabs/rails](https://github.com/flashylabs/flashy-rails) (consent-gated settlement on ledger)
+- Adopted by [ClaimYour.Gold](https://claimyour.gold) (rewards settlement)
+- Foundation for the full integration example at [flashy-network](https://flashynetwork.com)
+
+### See also
+
+- [@flashylabs/rails](https://github.com/flashylabs/flashy-rails) — Consent layer on top of ledger
+- [Flashy Finance](https://flashy.financial) — Live financial rail (built on ledger + rails)
+- [flashy.tools](https://flashy.tools) — Full package catalog with discovery
+
+## Quick start
+
+**Consumer** — once published (it is not yet; see **Publishing**, below):
+
+```bash
+npm install @flashylabs/ledger
+```
+
+**Developer** — clone and check:
 
 ```bash
 npm ci
-npm run check     # typecheck + lint + tests with coverage gates
+npm run check     # typecheck + lint + tests with coverage gates + standalone node tests
 ```
 
 ## Using it
@@ -224,9 +251,54 @@ past it is labelled North Star until its code ships.
 
 ## Status
 
-Pre-1.0. The entry format and hash input are not yet frozen — changing either
-invalidates existing chains, so both will be locked before the first production
-write. See `docs/adr/` for the decisions behind the design.
+`package.json` declares 1.0.0, and nothing at that version is on the public
+registry yet ([Publishing](#publishing)). The entry format and the hash input
+are what a major version pins: changing the fields `hashEntry` joins, or
+their order, invalidates every existing chain and is a breaking change with a
+re-hashing plan, never a refactor. See `docs/adr/` for the decisions behind
+the design and [Wire shapes](#wire-shapes) for the format as it stands.
+
+## Wire shapes
+
+The JSON an entry or an asset takes on a wire, as JSON Schema (draft
+2020-12), for anybody validating what this package emits or consuming it from
+another language:
+
+- [`schema/entry.json`](./schema/entry.json) — `Entry` from
+  `src/domain/entry.ts`. Every amount is an integer in minor units, bounded to
+  the exact range `minor()` accepts; `amount` may not be zero; `occurredAt`
+  is an RFC 3339 string (a `Date` in TypeScript); `previousHash` is a
+  64-hex digest or `null`. A `ProposedEntry` is the same shape without `id`.
+- [`schema/asset.json`](./schema/asset.json) — `Asset` from
+  `src/domain/asset.ts`, with the slug, symbol and decimals rules
+  `defineAsset()` enforces.
+
+Both refuse unknown keys unless they are `x-` prefixed. `metadata` is free
+and is not part of the hash. `tests/schema.test.mjs` (`npm run
+test:standalone`, no install needed) builds real entries through `post()`
+and `InMemoryLedgerStore`, validates them, and fails if the `kind` or `class`
+enums or the asset patterns drift from the TypeScript source.
+
+## Publishing
+
+**Not yet on the public registry.** `npm view @flashylabs/ledger --registry
+https://registry.npmjs.org/` answered 404 on 2026-09-28. Versions up to
+0.8.0 were published to GitHub Packages (see [`RELEASES.md`](./RELEASES.md)),
+which needs a token even to read a public package — so that is no longer the
+target.
+
+`publishConfig` points at `https://registry.npmjs.org/` with `access:
+public`, and `.github/workflows/publish.yml` publishes there on a pushed
+`vX.Y.Z` tag matching `package.json`, or on a manual dispatch that tags after
+the publish lands. It needs exactly one repository secret:
+
+| Secret | What | Where it comes from |
+|---|---|---|
+| `NPM_TOKEN` | An npm access token with publish rights on the `@flashylabs` scope (granular token: read and write on the package or scope, with 2FA bypass for automation) | npmjs.com → Access Tokens; store it only as a GitHub Actions secret, never in a file |
+
+Without it the workflow refuses to run — it does not fall back to another
+registry. When the first publish lands, replace the first sentence of this
+section with the version and date, and add the row to `RELEASES.md`.
 
 ## The invariants
 

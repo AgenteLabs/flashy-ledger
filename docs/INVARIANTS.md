@@ -7,6 +7,14 @@ proves it. A guarantee with no test behind it is a preference.
 `tests/invariants.test.ts` asserts that this table and the code agree — every
 invariant below names a test that exists, and the count here matches the count
 there. The document cannot drift from the suite without failing the build.
+`vendor-invariants.mjs` at the root — a byte-identical copy of spec-kit's
+`invariants/1` harness, pinned to canon by `tests/vendor-invariants-drift.test.ts`
+and reported UNKNOWN when canon is absent — checks the same contract from the
+command line (`node vendor-invariants.mjs check .`) and is what
+`tests/invariants-harness.test.ts` drives: the invariants that are about *pairs*
+of writes, run under every schedule the harness knows and under seeded random
+command sequences, with the pre-fix reference store handed to the harness so a
+green run means the harness can see.
 
 ## I-1 · Append-only
 
@@ -41,7 +49,9 @@ rather than rounding.
 **Proved by.** `ledger.test.ts` › *rejects precision the asset cannot hold rather than rounding it*,
 › *rejects non-finite and non-integer values*, and
 › *adds exactly where floating point would not* — the last being the case the
-predecessor failed in production.
+predecessor failed in production. The brand is a compile-time promise, so
+`post()` re-asserts it at runtime on the one path every entry takes:
+› *re-asserts the Minor brand at runtime, so a JSON body cannot hash a NaN, a fraction or a string into a chain*.
 
 ## I-3 · One sign convention
 
@@ -73,7 +83,11 @@ process, an index runs on every write from every process forever.
 **Proved by.** `conformance.test.ts` › *returns the original entry when a key is replayed, and writes nothing*,
 run against every adapter, and
 › *still deduplicates a genuine replay within one tenant*, which guards the
-scoping change in I-6 from over-correcting into a lost deduplication.
+scoping change in I-6 from over-correcting into a lost deduplication. Under
+interleaving, `invariants-harness.test.ts`
+› *the same key appended twice, under every schedule: one entry on the record, both callers handed it, exactly one reported as new* —
+sequential, both orders, started together, a macrotask apart — with the
+mutation check › *refuses a store that forgot its key index: the replay lands twice on every schedule*.
 
 ## I-5 · Balances are derived
 
@@ -89,7 +103,11 @@ never the source.
 
 **Proved by.** `ledger.test.ts` › *derives a balance from entries alone*, and
 › *keeps assets separate on one identity*, so the fold is per asset rather than
-per identity.
+per identity. Under random sequences of `post`, `postTransfer`, `reverse`, a
+replay and a write against a stale head, `invariants-harness.test.ts`
+› *every stored balance is the fold over its entries, every chain verifies, every head is the last entry, and no balance goes negative except by a reversal* —
+the stored state is compared to the fold after every command, so a store
+whose projection can part from its entries fails the run.
 
 ## I-6 · Tenant isolation
 
@@ -181,7 +199,50 @@ guards the one consumer this package has. The surrogate is held to
 message would be wrong — and
 › *refuses a salt short enough to be brute-forced*.
 
-## I-9 · The domain is pure and storage-agnostic
+## I-9 · One head per chain
+
+**Claim.** Every entry chains onto the head of its `(tenantId, identityId,
+assetId)` chain as it stood when the entry was written. Two appends that both
+read the same head cannot both land; the second is refused and the caller
+re-reads state and retries.
+
+**Why.** Added in the 1.0.x line. Port contract §4 had promised this since the
+store interface was written, and the Mongo adapter kept it by a unique index on
+`(tenantId, identityId, assetId, previousHash)`. The in-memory reference
+implementation — the executable specification every adapter is measured against
+— did not: two interleaved debits of a whole balance both settled, the stored
+balance read zero, and the fold over the entries read minus the balance. A
+transfer from an identity to itself was the same fault reached a different way:
+both legs posted against one state, so the chain forked and the holder was
+credited the sum of both legs.
+
+**Enforced by.** `InMemoryLedgerStore.appendAll` computes the live head of each
+candidate's chain — including anything staged earlier in the same batch — and
+refuses a candidate whose `previousHash` is not that head, with the same error
+the Mongo path raises when its index refuses the insert. `postTransfer` refuses
+`from.identityId === to.identityId` outright, because no store can make two legs
+on one head mean anything.
+
+**Proved by.** `conformance.test.ts` › *refuses a second append on a head another append has already moved*
+and › *refuses a batch whose entries fork one chain, and lands neither*, both
+run against every adapter; and `ledger.test.ts`
+› *refuses a transfer from an identity to itself, which would fork its chain and mint the amount*.
+
+Those run the race in the order the test chose. Under interleaving,
+`invariants-harness.test.ts`
+› *two debits of the whole balance and a credit, every ordered pair, every schedule: exactly one of the debits lands, the chain verifies, and the stored state is the fold*
+(nine ordered pairs, forty-five schedules), and the mutation check hands the
+harness the reference store as it was before this invariant was enforced:
+› *refuses the pre-fix reference store, whose appendAll ignores the head, on exactly the two started-together schedules* —
+`a||b` and `b||a`, and no other: sequentially the second read sees the moved
+head and `post()` refuses, and a macrotask apart the first append has landed.
+That is the exact shape of the defect, a guarantee that held for one write at a
+time. The same store under random sequences is refused by
+› *refuses the pre-fix reference store under the same sequences — a write against a stale head lands, and shrinks to capture, write, stale write*,
+the port's §4 case — a caller that did not re-read state — reduced to three
+commands.
+
+## I-10 · The domain is pure and storage-agnostic
 
 **Claim.** `src/domain/**` reads no database, calls no clock, and generates no
 randomness. Its only dependencies are other domain modules and `node:crypto`

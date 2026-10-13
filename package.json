@@ -41,7 +41,8 @@
     "test:watch": "vitest",
     "coverage": "vitest run --coverage",
     "lint": "eslint src tests",
-    "check": "npm run typecheck && npm run lint && npm run coverage",
+    "test:standalone": "node --test tests/*.test.mjs",
+    "check": "npm run typecheck && npm run lint && npm run coverage && npm run test:standalone",
     "prepare": "npm run build",
     "bolt": "node scripts/bolt.mjs",
     "directory": "node scripts/directory.mjs",
@@ -61,8 +62,8 @@
     "mongodb": "^6.21.0 || ^7.0.0"
   },
   "publishConfig": {
-    "registry": "https://npm.pkg.github.com",
-    "access": "restricted"
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
   },
   "repository": {
     "type": "git",

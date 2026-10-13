@@ -264,6 +264,34 @@ describe.each(harnesses.filter((h) => !h.skip))('$name', ({ make }) => {
     expect(await store.readEntries({ tenantId: 'flashy', identityId: 'id_a', assetId: GOLD.id })).toHaveLength(1)
   })
 
+  it('refuses a second append on a head another append has already moved', async () => {
+    // Port contract §4: two concurrent appends cannot both build on the same
+    // head. Two debits of the whole balance, each proposed against the same
+    // state, must settle as one debit and one refusal — never as two entries
+    // whose fold is negative. The Mongo adapter has always refused this by
+    // unique index; the reference implementation did not, so the suite was
+    // reporting a guarantee the specification itself lacked.
+    const id = 'id_head_race'
+    await store.append(await propose(store, id, 100, `${id}:fund`))
+
+    const state = await store.readState({ tenantId: 'flashy', identityId: id, assetId: GOLD.id })
+    const first = post(state, {
+      tenantId: 'flashy', identityId: id, asset: GOLD, amount: fromDecimal(-100, GOLD.decimals),
+      kind: 'SPEND', source: { type: 'test' }, idempotencyKey: `${id}:d1`, occurredAt: new Date('2026-08-13T12:00:00Z'),
+    })
+    const second = post(state, {
+      tenantId: 'flashy', identityId: id, asset: GOLD, amount: fromDecimal(-100, GOLD.decimals),
+      kind: 'SPEND', source: { type: 'test' }, idempotencyKey: `${id}:d2`, occurredAt: new Date('2026-08-13T12:00:00Z'),
+    })
+
+    await store.append(first)
+    await expect(store.append(second)).rejects.toThrow(/chain head moved/)
+
+    const after = await store.readState({ tenantId: 'flashy', identityId: id, assetId: GOLD.id })
+    expect(after.balance).toBe(0)
+    expect(await store.readEntries({ tenantId: 'flashy', identityId: id, assetId: GOLD.id })).toHaveLength(2)
+  })
+
   it('declares whether it can commit several entries together', () => {
     // Not every store can, which is why this is a capability check rather than
     // an assumption. A caller that needs transfers has to ask.
@@ -319,6 +347,29 @@ describe.each(harnesses.filter((h) => !h.skip))('$name — transfers', ({ make }
 
     expect((await store.readState({ tenantId: 'flashy', identityId: 'id_sender', assetId: GOLD.id })).balance).toBe(7000)
     expect((await store.readState({ tenantId: 'flashy', identityId: 'id_recipient', assetId: GOLD.id })).balance).toBe(3000)
+  })
+
+  it('refuses a batch whose entries fork one chain, and lands neither', async () => {
+    // Two entries proposed against the same state inside one batch. The second
+    // must be checked against the head the first would create, not against the
+    // published head — otherwise the batch writes a fork that the single-entry
+    // path would have refused.
+    const id = 'id_batch_fork'
+    await store.append(await propose(store, id, 100, `${id}:fund`))
+    const state = await store.readState({ tenantId: 'flashy', identityId: id, assetId: GOLD.id })
+    const command = (key: string, amount: number) => ({
+      tenantId: 'flashy', identityId: id, asset: GOLD, amount: fromDecimal(amount, GOLD.decimals),
+      kind: 'SPEND' as const, source: { type: 'test' }, idempotencyKey: key, occurredAt: new Date('2026-08-13T12:00:00Z'),
+    })
+
+    // Under Mongo the fork surfaces as the chain-head index refusing the second
+    // insert inside the transaction; the message is the adapter's, the outcome
+    // — a rejection and no money moved — is the port's.
+    await expect(store.appendAll([post(state, command(`${id}:a`, -60)), post(state, command(`${id}:b`, -60))])).rejects.toThrow()
+
+    const after = await store.readState({ tenantId: 'flashy', identityId: id, assetId: GOLD.id })
+    expect(after.balance).toBe(10000)
+    expect(await store.readEntries({ tenantId: 'flashy', identityId: id, assetId: GOLD.id })).toHaveLength(1)
   })
 
   it('treats an empty batch as a no-op rather than an error', async () => {

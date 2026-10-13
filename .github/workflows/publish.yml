@@ -1,7 +1,7 @@
 name: Publish
 
 # Tag-triggered, not push-to-main-triggered — a merge to main should not be
-# indistinguishable from a release. Push a version tag (git tag v0.1.0 && git
+# indistinguishable from a release. Push a version tag (git tag v1.0.0 && git
 # push --tags) when you actually mean to publish.
 #
 # workflow_dispatch is the same deliberate act for operators whose git path
@@ -11,6 +11,20 @@ name: Publish
 # tag" survives, with the arrow reversed: the release makes the tag instead
 # of the tag making the release. It refuses to run if the tag already
 # exists, which keeps dispatch from ever re-publishing or moving history.
+#
+# THE TARGET IS THE PUBLIC NPM REGISTRY. It used to be GitHub Packages, with
+# npmjs as a best-effort "mirror" step that cost four releases (see the
+# release ledger, RELEASES.md). GitHub Packages requires a token even to
+# READ a public package, and the whole point of open rules is that a
+# stranger can take them — so the mirror was the release and the release was
+# the mirror. Every version up to 0.8.0 is on GitHub Packages and stays
+# there; nothing here publishes to it any more, and PACKAGES_TOKEN is read
+# by no workflow in this repository.
+#
+# One secret: NPM_TOKEN, an npm access token with publish rights on the
+# @flashylabs scope (README, "Publishing"). Without it the job REFUSES,
+# before installing anything — there is no fallback registry to land on by
+# accident.
 on:
   push:
     tags:
@@ -21,14 +35,10 @@ permissions:
   # write, not read, for exactly one path: the dispatch flow pushes the
   # release tag it mints. The tag-push flow never writes contents.
   contents: write
-  # No NPM_TOKEN secret to create or rotate — GITHUB_TOKEN already has
-  # package-publish rights to this repo's own packages when a workflow
-  # explicitly asks for them here.
-  packages: write
 
 jobs:
   publish:
-    name: Build and publish to GitHub Packages
+    name: Build and publish to registry.npmjs.org
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
@@ -38,18 +48,28 @@ jobs:
         with:
           node-version: 22
           cache: npm
-          # Scopes this Node install's npm to GH Packages for the
-          # @flashylabs scope specifically — matches package.json's own
-          # publishConfig, stated here too so `npm publish` doesn't depend
-          # on the working directory already having a correct .npmrc.
-          #
-          # Not @flashy: GitHub Packages requires the npm scope to exactly
-          # match the GitHub account that owns the repo (FlashyLabs), or it
-          # refuses to create the package regardless of token permissions —
-          # this is what "installation does not exist" / "permission_denied:
-          # create_package" actually meant, on every prior publish attempt.
-          registry-url: https://npm.pkg.github.com
+          # setup-node writes `@flashylabs:registry=<registry-url>` into the
+          # userconfig it points NPM_CONFIG_USERCONFIG at, and a SCOPED
+          # registry entry beats both publishConfig.registry and --registry.
+          # That is the mechanism that once sent an npmjs token to GitHub
+          # Packages; stated here so the scope and the registry agree with
+          # package.json's own publishConfig and cannot be overridden by a
+          # stray .npmrc in the checkout.
+          registry-url: https://registry.npmjs.org
           scope: "@flashylabs"
+
+      # Fail closed, first. A publish that "succeeds" by falling back to a
+      # token-less registry, or that gets as far as the PUT before finding
+      # out there is no credential, is the shape every prior failure here
+      # took. The refusal is the gate.
+      - name: Refuse to run without NPM_TOKEN
+        env:
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: |
+          if [ -z "$NPM_TOKEN" ]; then
+            echo "::error::NPM_TOKEN is not set. Add an npm access token with publish rights on @flashylabs as a repository secret named NPM_TOKEN (see README, Publishing). Nothing was published." >&2
+            exit 1
+          fi
 
       - run: npm ci
       - run: npm run typecheck
@@ -83,79 +103,19 @@ jobs:
             exit 1
           fi
 
-      # PAT first, GITHUB_TOKEN as fallback. The GITHUB_TOKEN-first ordering
-      # was justified by run 12 "reaching E409 instead of E401" — but the
-      # registry checks version-existence before it verifies the token, so
-      # E409 proved nothing about auth. Every publish since that flip (0.6.3,
-      # 0.8.0) has died with the same E401 on the PUT, while reads in the very
-      # same runs resolved fine: GITHUB_TOKEN can read this package but cannot
-      # publish to it, because @flashylabs/ledger was created by manual PAT
-      # publishes and the package's own access list — not the workflow's
-      # permissions block — decides who may PUT new versions. Until the
-      # package grants this repo's Actions write access (package settings →
-      # Manage Actions access), the PAT is the only token the registry
-      # accepts for publish.
-      - name: Publish to GitHub Packages
+      # The registry checks version-existence before it verifies the token,
+      # so an E409 here means "already published", not "authenticated" —
+      # read the error, not the step colour.
+      - name: Publish to registry.npmjs.org
         id: publish
         env:
-          NODE_AUTH_TOKEN: ${{ secrets.PACKAGES_TOKEN || secrets.GITHUB_TOKEN }}
-        run: npm publish
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: npm publish --access public
 
-      # The same version, mirrored to the PUBLIC npm registry so consumers
-      # install with zero auth — GitHub Packages requires a token even for
-      # public packages, and the whole point of the open rules is that a
-      # stranger can take them.
-      #
-      # THIS STEP HAD TWO BUGS AND THEY COST FOUR RELEASES.
-      #
-      # It wrote the npmjs token to `~/.npmrc`, while `setup-node` sets
-      # NPM_CONFIG_USERCONFIG to a temp file — so the credential landed in a
-      # file npm never read. And `npm pkg set publishConfig.registry` loses to
-      # the SCOPED `@flashylabs:registry` that setup-node wrote into that temp
-      # config: a scoped registry beats publishConfig. So the "mirror to
-      # npmjs" step re-published to GITHUB PACKAGES using an npmjs token, and
-      # died with E401 against a registry it was never meant to touch.
-      #
-      # Read the logs of runs 13 and 14 and the shape is unmistakable:
-      #   Run npm publish                   success   ← the release LANDED
-      #   Mirror to the public npm registry failure   ← this step
-      #   Tag the released version          skipped   ← collateral
-      #
-      # 0.6.3 and 0.8.0 are on GitHub Packages right now. They have no tag
-      # because this step failed after they succeeded, and a failed step skips
-      # every step after it. Three sessions read those runs as "the publish
-      # died on E401" and went looking at package access lists, because the
-      # only line anybody grepped for was the last error in the log.
-      #
-      # It now writes to the config npm actually reads, overrides the SCOPED
-      # registry, and cannot fail the job: a mirror that breaks a release it
-      # is only copying is worse than no mirror.
-      - name: Mirror to the public npm registry
-        continue-on-error: true
-        env:
-          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
-        run: |
-          if [ -z "$NPM_TOKEN" ]; then
-            echo "::notice::NPM_TOKEN secret not set — skipped the public-registry mirror. Add an npm token with read-write on @flashylabs to publish there too."
-            exit 0
-          fi
-          # The scoped entry, not publishConfig: `@scope:registry` wins over
-          # both `publishConfig.registry` and `--registry`.
-          {
-            echo "@flashylabs:registry=https://registry.npmjs.org"
-            echo "//registry.npmjs.org/:_authToken=\${NPM_TOKEN}"
-          } >> "${NPM_CONFIG_USERCONFIG:-$HOME/.npmrc}"
-          npm pkg set publishConfig.registry=https://registry.npmjs.org publishConfig.access=public
-          npm publish --access public
-          echo "::notice::Mirrored to registry.npmjs.org as public."
-
-      # Only after the PUBLISH succeeded — which is `npm publish` above, and
-      # not the mirror. `steps.publish.conclusion` is checked explicitly
-      # rather than relying on the implicit `success()`, because the implicit
-      # form treats ANY earlier failure as reason to skip, and that is exactly
-      # how a working release ended up untagged twice: the mirror failed, this
-      # step skipped, and the tag that would have recorded a real publish was
-      # never written.
+      # Only after the PUBLISH succeeded. `steps.publish.conclusion` is
+      # checked explicitly rather than relying on the implicit `success()`,
+      # because the implicit form treats ANY earlier failure as reason to
+      # skip — which is how a working release ended up untagged twice.
       #
       # The invariant is unchanged and is the one that matters: a tag is
       # written only where a release actually landed.

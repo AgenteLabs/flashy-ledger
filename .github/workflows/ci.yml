@@ -30,6 +30,8 @@ jobs:
         run: npm run lint
       - name: Tests and coverage gate
         run: npm run coverage
+      - name: Standalone node tests (wire schemas, README cross-links)
+        run: npm run test:standalone
       - name: Build
         run: npm run build
 

@@ -1,0 +1,130 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/FlashyLabs/flashy-ledger/schema/entry.json",
+  "title": "Entry",
+  "description": "One movement of one asset for one identity, as it crosses a wire (JSON). Mirrors `Entry` in src/domain/entry.ts. Append-only: an entry is never updated and never deleted; a mistake is corrected by posting an offsetting entry. A ProposedEntry (src/domain/post.ts) is this shape without `id`, which storage assigns. Every amount is a Minor: a whole number of the asset's smallest unit, never a float, never a string. `occurredAt` is a Date in the TypeScript type and an RFC 3339 date-time string on the wire. Unknown keys are refused unless prefixed `x-`.",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Assigned by the store on append. Opaque."
+    },
+    "tenantId": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Whose books. Every read and every uniqueness constraint is scoped to one tenant."
+    },
+    "identityId": {
+      "type": "string",
+      "minLength": 1,
+      "description": "An opaque, tenant-scoped token. Never a natural key — no email, phone, wallet address or public key. post() refuses these before anything is hashed."
+    },
+    "assetId": {
+      "type": "string",
+      "minLength": 1,
+      "description": "The `id` of an Asset (schema/asset.json). Entries are keyed on it; a slug in this field is the bug that once made four payouts fail silently."
+    },
+    "amount": {
+      "$ref": "#/$defs/minor",
+      "not": { "const": 0 },
+      "description": "Signed. Positive credits, negative debits. One convention, always. Zero is refused by post()."
+    },
+    "balanceBefore": {
+      "$ref": "#/$defs/minor",
+      "description": "The identity's balance of this asset before this entry."
+    },
+    "balanceAfter": {
+      "$ref": "#/$defs/minor",
+      "description": "balanceBefore + amount. verifyChain() refuses an entry where it is not."
+    },
+    "kind": {
+      "type": "string",
+      "enum": [
+        "EARN",
+        "SPEND",
+        "TRANSFER_IN",
+        "TRANSFER_OUT",
+        "ADJUSTMENT",
+        "REVERSAL",
+        "EXPIRY",
+        "MIGRATION",
+        "DECAY"
+      ],
+      "description": "Mirrors `EntryKind` in src/domain/entry.ts; tests/schema.test.mjs fails if the two lists drift. MIGRATION is a one-time backfill from a pre-ledger balance; DECAY is principled, explicit loss with a negative amount."
+    },
+    "source": { "$ref": "#/$defs/source" },
+    "idempotencyKey": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Derived from the source event (`quest:q_9:identity_1`), never a timestamp. Unique per tenant. A replay returns the original entry rather than posting a second."
+    },
+    "occurredAt": {
+      "type": "string",
+      "format": "date-time",
+      "description": "RFC 3339 / ISO 8601. Supplied by the caller — the domain calls no clock. Hashed via toISOString(), so a consumer re-hashing an entry must render it the same way."
+    },
+    "previousHash": {
+      "oneOf": [{ "$ref": "#/$defs/sha256" }, { "type": "null" }],
+      "description": "Hash of the preceding entry for this identity; null for the first."
+    },
+    "hash": {
+      "$ref": "#/$defs/sha256",
+      "description": "sha256 over the hashed fields in the fixed order hashEntry() defines, chained onto previousHash. Changing the field set or order invalidates every existing chain."
+    },
+    "metadata": {
+      "type": "object",
+      "description": "Free-form and NOT part of the hash. Anything a caller needs to carry that the rules do not read."
+    }
+  },
+  "required": [
+    "id",
+    "tenantId",
+    "identityId",
+    "assetId",
+    "amount",
+    "balanceBefore",
+    "balanceAfter",
+    "kind",
+    "source",
+    "idempotencyKey",
+    "occurredAt",
+    "previousHash",
+    "hash"
+  ],
+  "patternProperties": {
+    "^x-": {}
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "minor": {
+      "type": "integer",
+      "minimum": -9007199254740991,
+      "maximum": 9007199254740991,
+      "description": "A whole number of the asset's smallest unit (src/domain/money.ts, the branded `Minor`). Gold at 2 decimals carries 12.34 as 1234. Bounded to JavaScript's exact integer range: minor() refuses anything Number.isSafeInteger does."
+    },
+    "sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$",
+      "description": "Lower-case hex sha256 digest."
+    },
+    "source": {
+      "type": "object",
+      "description": "What produced the movement. `type` and `id` are hashed; `description` is not.",
+      "properties": {
+        "type": {
+          "type": "string",
+          "minLength": 1,
+          "description": "e.g. 'quest', 'gift', 'partner-api', 'reversal'."
+        },
+        "id": { "type": "string" },
+        "description": { "type": "string" }
+      },
+      "required": ["type"],
+      "patternProperties": {
+        "^x-": {}
+      },
+      "additionalProperties": false
+    }
+  }
+}

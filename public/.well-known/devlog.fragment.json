@@ -2,8 +2,15 @@
   "devlog": "1",
   "source": "repo/flashy-ledger",
   "org": "org/flashy-ledger",
-  "generated": "2026-10-04T10:38:39.141Z",
+  "generated": "2026-10-12T12:09:23.910Z",
   "entries": [
+    {
+      "id": "devlog/flashy-ledger/98890d318e4f",
+      "at": "2026-10-10T05:29:47Z",
+      "summary": "Guard the chain head in the reference store, re-assert Minor at runtime, refuse self-transfers",
+      "commitSha": "98890d318e4f4119146a358a5d5bc31cc092de03",
+      "ref": "https://github.com/FlashyLabs/flashy-ledger/commit/98890d318e4f4119146a358a5d5bc31cc092de03"
+    },
     {
       "id": "devlog/flashy-ledger/a6e4735444b0",
       "at": "2026-09-15T17:44:23-04:00",
