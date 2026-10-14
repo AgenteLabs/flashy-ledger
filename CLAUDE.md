@@ -3,10 +3,13 @@
 An append-only, multi-asset, storage-agnostic settlement ledger, published as
 a TypeScript library (ESM and CJS builds, no runtime dependencies; `mongodb`
 is an optional peer). Flashy Gold is the first asset on it, not the thing
-itself. Consumed by flashy-rails (consent-gated settlement on top of it) and
-ClaimYour.Gold (hash chains computed here, written through Prisma). There is
-no deployed website: what ships is a package, and as of 2026-09-28 it is
-**not yet on the public npm registry** (see Publishing).
+itself. Consumed by flashy-rails (consent-gated settlement on top of it),
+ClaimYour.Gold (hash chains computed here, written through Prisma, and the
+nightly Merkle anchor) and flashy.gold (read-only, through `GoldLedgerReader`).
+There is no deployed website: what ships is a package — which is why the
+estate fold-coverage survey reads this as a record repository with no served
+URL rather than a gap — and as of 2026-09-28 it is **not yet on the public npm
+registry** (see Publishing).
 
 ## Commands
 
@@ -51,7 +54,23 @@ reaches for `Date` or `Math.random()`. `src/ports/store.ts` is the seam;
 specification, because `tests/conformance.test.ts` runs the same suite
 against it and against `MongoLedgerStore`. A backing store behaves
 identically or fails the build. The dependency rule is one-directional:
-adapters → ports → domain → nothing.
+adapters → ports → domain → nothing — and that direction is enforced, not
+only stated: `tests/domain-purity.test.ts` reads the real import graph of
+`src/domain` with the compiler's own `ts.preProcessFile` and refuses any
+specifier that is not a domain sibling or `node:crypto` (I-10). Lint catches a
+global *used*; the test catches a module *imported*; neither alone is the
+invariant.
+
+**The conformance population is derived, never hand-kept.**
+`tests/adapters.catalog.ts` is the one list of writable `LedgerStore` classes;
+`conformance.test.ts` builds its harnesses from it (Mongo skipped without a
+database, never dropped from the count) and `tests/adapter-coverage.test.ts`
+checks the catalog against the package's real exports, recognising a writable
+store by structure — an `append` method — so the read-only `GoldLedgerReader`
+is excluded by the same fact that makes it read-only. An exported store that
+is not harnessed fails the build. The Mongo adapter's concurrency and
+atomicity design — why a transfer needs a client, what the two unique indexes
+refuse — is written down in `docs/adr/0004-mongo-concurrency-and-atomicity.md`.
 
 **`Minor` is a branded integer and refuses to be anything else.**
 `src/domain/money.ts`: `minor()` throws `PrecisionError` on a non-integer or
@@ -90,8 +109,13 @@ drift from the TypeScript source.
 
 ## Rules the tests enforce — none decorative
 
-- `docs/INVARIANTS.md` numbers eight invariants, each citing a test by name;
-  `tests/invariants.test.ts` fails if a cited test no longer exists.
+- `docs/INVARIANTS.md` numbers ten invariants, each citing a test by name;
+  `tests/invariants.test.ts` fails if a cited test no longer exists, if the
+  numbering has a gap, or if a section is missing one of its four headings.
+- `tests/domain-purity.test.ts`: nothing under `src/domain` imports an
+  adapter, a port, an I/O builtin or a third-party package (I-10).
+- `tests/adapter-coverage.test.ts`: every exported writable store is in the
+  conformance catalog and every cataloged store is exported.
 - `tests/public-api.test.ts` lists every export by hand. Removing one is a
   major version, and the list is deliberately not a generated snapshot.
 - `tests/workflow-pins.test.ts`: every third-party `uses:` in a workflow is
