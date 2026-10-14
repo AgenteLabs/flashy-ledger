@@ -2,8 +2,27 @@
   "shipped": "1",
   "source": "repo/flashy-ledger",
   "org": "org/flashy-ledger",
-  "generated": "2026-10-14T02:11:45.525Z",
+  "generated": "2026-10-14T02:40:40.255Z",
   "entries": [
+    {
+      "id": "ship/flashy-ledger/ada08f666af5",
+      "repo": "repo/flashy-ledger",
+      "at": "2026-10-14T09:40:30+07:00",
+      "kind": "feature",
+      "title": "Merge pull request #14 from FlashyLabs/claude/flashy-ledger-architecture-audit-79az1h",
+      "by": [
+        "person/michael"
+      ],
+      "asserted": "2026-10-14",
+      "assertedBy": "agent/flashy-ledger-ci",
+      "visibility": "public",
+      "detail": "Architecture audit: enforce domain purity, derive the conformance population, document Mongo atomicity",
+      "refs": {
+        "commit": "ada08f666af584e299d09132ad49a5b717b7dc00",
+        "pr": "https://github.com/FlashyLabs/flashy-ledger/pull/14"
+      },
+      "digest": "fa0a954a056837231c68b6e3ee4ccaa9fa79fd6ab4e979131297494cd7bb84f5"
+    },
     {
       "id": "ship/flashy-ledger/46cd3a180473",
       "repo": "repo/flashy-ledger",

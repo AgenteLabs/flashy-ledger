@@ -2,8 +2,15 @@
   "devlog": "1",
   "source": "repo/flashy-ledger",
   "org": "org/flashy-ledger",
-  "generated": "2026-10-14T02:11:45.531Z",
+  "generated": "2026-10-14T02:40:40.260Z",
   "entries": [
+    {
+      "id": "devlog/flashy-ledger/ada08f666af5",
+      "at": "2026-10-14T09:40:30+07:00",
+      "summary": "Merge pull request #14 from FlashyLabs/claude/flashy-ledger-architecture-audit-79az1h",
+      "commitSha": "ada08f666af584e299d09132ad49a5b717b7dc00",
+      "ref": "https://github.com/FlashyLabs/flashy-ledger/commit/ada08f666af584e299d09132ad49a5b717b7dc00"
+    },
     {
       "id": "devlog/flashy-ledger/98890d318e4f",
       "at": "2026-10-10T05:29:47Z",

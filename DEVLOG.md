@@ -3,6 +3,10 @@
 _This is the changelog. "Devlog" and "changelog" name the same document here —_
 _see `devlog/1` in `packages/shiplog/SPEC.md` if that reads like it needs reconciling._
 
+## 2026-10-14
+
+- Merge pull request #14 from FlashyLabs/claude/flashy-ledger-architecture-audit-79az1h ([`ada08f666af5`](https://github.com/FlashyLabs/flashy-ledger/commit/ada08f666af584e299d09132ad49a5b717b7dc00))
+
 ## 2026-10-10
 
 - Guard the chain head in the reference store, re-assert Minor at runtime, refuse self-transfers ([`98890d318e4f`](https://github.com/FlashyLabs/flashy-ledger/commit/98890d318e4f4119146a358a5d5bc31cc092de03))
