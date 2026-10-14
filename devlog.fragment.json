@@ -2,8 +2,15 @@
   "devlog": "1",
   "source": "repo/flashy-ledger",
   "org": "org/flashy-ledger",
-  "generated": "2026-10-14T09:35:13.359Z",
+  "generated": "2026-10-14T11:27:57.828Z",
   "entries": [
+    {
+      "id": "devlog/flashy-ledger/f956f7b7c35a",
+      "at": "2026-10-14T18:27:44+07:00",
+      "summary": "Merge pull request #15 from FlashyLabs/claude/ceo-estate-dashboard-gmtgl8",
+      "commitSha": "f956f7b7c35a14f274f894748b275c055baad621",
+      "ref": "https://github.com/FlashyLabs/flashy-ledger/commit/f956f7b7c35a14f274f894748b275c055baad621"
+    },
     {
       "id": "devlog/flashy-ledger/ada08f666af5",
       "at": "2026-10-14T09:40:30+07:00",

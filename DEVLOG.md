@@ -5,6 +5,7 @@ _see `devlog/1` in `packages/shiplog/SPEC.md` if that reads like it needs reconc
 
 ## 2026-10-14
 
+- Merge pull request #15 from FlashyLabs/claude/ceo-estate-dashboard-gmtgl8 ([`f956f7b7c35a`](https://github.com/FlashyLabs/flashy-ledger/commit/f956f7b7c35a14f274f894748b275c055baad621))
 - Merge pull request #14 from FlashyLabs/claude/flashy-ledger-architecture-audit-79az1h ([`ada08f666af5`](https://github.com/FlashyLabs/flashy-ledger/commit/ada08f666af584e299d09132ad49a5b717b7dc00))
 
 ## 2026-10-10

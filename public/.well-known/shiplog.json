@@ -2,8 +2,27 @@
   "shipped": "1",
   "source": "repo/flashy-ledger",
   "org": "org/flashy-ledger",
-  "generated": "2026-10-14T09:35:13.356Z",
+  "generated": "2026-10-14T11:27:57.826Z",
   "entries": [
+    {
+      "id": "ship/flashy-ledger/f956f7b7c35a",
+      "repo": "repo/flashy-ledger",
+      "at": "2026-10-14T18:27:44+07:00",
+      "kind": "feature",
+      "title": "Merge pull request #15 from FlashyLabs/claude/ceo-estate-dashboard-gmtgl8",
+      "by": [
+        "person/michael"
+      ],
+      "asserted": "2026-10-14",
+      "assertedBy": "agent/flashy-ledger-ci",
+      "visibility": "public",
+      "detail": "vendor: re-vendor drifted emitter copies from canon",
+      "refs": {
+        "commit": "f956f7b7c35a14f274f894748b275c055baad621",
+        "pr": "https://github.com/FlashyLabs/flashy-ledger/pull/15"
+      },
+      "digest": "2550afbfd2134d3953cd5ef362afc7fb29bda430d588a7af794304b5d4d673fb"
+    },
     {
       "id": "ship/flashy-ledger/ada08f666af5",
       "repo": "repo/flashy-ledger",
