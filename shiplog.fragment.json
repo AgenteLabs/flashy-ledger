@@ -2,8 +2,26 @@
   "shipped": "1",
   "source": "repo/flashy-ledger",
   "org": "org/flashy-ledger",
-  "generated": "2026-10-12T12:09:23.904Z",
+  "generated": "2026-10-14T02:11:45.525Z",
   "entries": [
+    {
+      "id": "ship/flashy-ledger/46cd3a180473",
+      "repo": "repo/flashy-ledger",
+      "at": "2026-10-14T02:11:34Z",
+      "kind": "infra",
+      "title": "ledger: name the interleaving-audit fixes in the 1.0.0 release ledger row",
+      "by": [
+        "agent/claude"
+      ],
+      "asserted": "2026-10-14",
+      "assertedBy": "agent/flashy-ledger-ci",
+      "visibility": "public",
+      "detail": "The 1.0.0 tree carries four fixes found behind the green suite — runtime Minor\nre-assertion, the chain-head guard (I-9), and self-transfer refusal — and the\ninvariants/1 harness. The RELEASES.md row for 1.0.0 now names them, so the\npublish that finally lands on npmjs is traceable to what it fixed. Additive to\nthe notes column only; releases.test.ts stays green.\n\nCo-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_01KD3oquCLVnqZxYegHuZM6D",
+      "refs": {
+        "commit": "46cd3a180473220b29a160431d86a0bd91c374a9"
+      },
+      "digest": "e278f98473d3af58bafec0b4315f695d945c21ba24c1baf73573a403b4d0986a"
+    },
     {
       "id": "ship/flashy-ledger/f4a397b39edb",
       "repo": "repo/flashy-ledger",
