@@ -2,8 +2,27 @@
   "shipped": "1",
   "source": "repo/flashy-ledger",
   "org": "org/flashy-ledger",
-  "generated": "2026-10-15T09:12:48.074Z",
+  "generated": "2026-10-16T01:19:29.415Z",
   "entries": [
+    {
+      "id": "ship/flashy-ledger/7d502b4e7e7f",
+      "repo": "repo/flashy-ledger",
+      "at": "2026-10-16T08:18:47+07:00",
+      "kind": "infra",
+      "title": "bump the actions group across 1 directory with 6 updates (#17)",
+      "by": [
+        "agent/unattributed"
+      ],
+      "asserted": "2026-10-16",
+      "assertedBy": "agent/flashy-ledger-ci",
+      "visibility": "public",
+      "detail": "Bumps the actions group with 6 updates in the / directory:\n\n| Package | From | To |\n| --- | --- | --- |\n| [actions/setup-node](https://github.com/actions/setup-node) | `7.0.0` | `7.1.0` |\n| [github/codeql-action/init](https://github.com/github/codeql-action) | `3.38.1` | `4.38.3` |\n| [github/codeql-action/analyze](https://github.com/github/codeql-action) | `3.38.1` | `4.38.3` |\n| [ossf/scorecard-action](https://github.com/ossf/scorecard-action) | `2.4.4` | `2.5.0` |\n| [actions/upload-artifact](https://github.com/actions/upload-artifact) | `7.0.1` | `7.0.2` |\n| [github/codeql-action/upload-sarif](https://github.com/github/codeql-action) | `3.38.1` | `4.38.3` |\n\n\n\nUpdates `actions/setup-node` from 7.0.0 to 7.1.0\n- [Release notes](https://github.com/actions/setup-node/releases)\n- [Commits](https://github.com/actions/setup-node/compare/820762786026740c76f36085b0efc47a31fe5020...949feb2413d6458794dcd2491c4babbbce0c15c1)\n\nUpdates `github/codeql-action/init` from 3.38.1 to 4.38.3\n- [Release notes](https://github.com/github/codeql-action/releases)\n- [Changelog](https://github.com/github/codeql-action/blob/main/CHANGELOG.md)\n- [Commits](https://github.com/github/codeql-action/compare/3ea06614dafe36dec890db3446326e0d40ce53d4...24c54180a607b1449ed407dd24f251e4e9147c8d)\n\nUpdates `github/codeql-action/analyze` from 3.38.1 to 4.38.3\n- [Release notes](https://github.com/github/codeql-action/releases)\n- [Changelog](https://github.com/github/codeql-action/blob/main/CHANGELOG.md)\n- [Commits](https://github.com/github/codeql-action/compare/3ea06614dafe36dec890db3446326e0d40ce53d4...24c54180a607b1449ed407dd24f251e4e9147c8d)\n\nUpdates `ossf/scorecard-action` from 2.4.4 to 2.5.0\n- [Release notes](https://github.com/ossf/scorecard-action/releases)\n- [Changelog](https://github.com/ossf/scorecard-action/blob/main/RELEASE.md)\n- [Commits](https://github.com/ossf/scorecard-action/compare/2d1146689b8cda280b9bc96326124645441f03bc...fa7117db83c52d787ae5a89f350999701505d78e)\n\nUpdates `actions/uploa",
+      "refs": {
+        "commit": "7d502b4e7e7fb48bf885114fecfd9162e574fae3",
+        "pr": "https://github.com/FlashyLabs/flashy-ledger/pull/17"
+      },
+      "digest": "1fdefaff532fe0acdf3b17eabae63f52b9916b2ebc8c01813bc1a0c0a8e61b07"
+    },
     {
       "id": "ship/flashy-ledger/f956f7b7c35a",
       "repo": "repo/flashy-ledger",
