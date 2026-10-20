@@ -33,6 +33,15 @@ and the two tamper checks that make the absence detectable rather than merely
 intended: › *detects an entry edited after the fact* and
 › *detects a removed entry by the break it leaves in the chain*.
 
+Those tamper checks are only as strong as the bytes they hash, and `post()` and
+`verifyEntry()` both call `hashEntry`, so a change to the preimage would be
+self-consistent and leave every one of them green while every chain already
+written stopped verifying. `entry-hash.test.ts` pins the format itself, to
+digests computed outside this codebase:
+› *hashes the twelve fields, in order, joined by NUL, to a vector computed outside this codebase*,
+› *matches a second outside vector: chained, negative, no source id, millisecond precision* and
+› *joins with a NUL byte and nothing else*.
+
 ## I-2 · Signed integer minor units
 
 **Claim.** Every amount is a whole number of the asset's smallest unit, carried
