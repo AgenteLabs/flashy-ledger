@@ -12,7 +12,7 @@
     },
     "root": {
       "$ref": "#/$defs/hex",
-      "description": "The Merkle root over the entries, leaves sorted by id: SHA256(0x00 || canonical) for a leaf, SHA256(0x01 || left || right) for a node, an odd node promoted rather than duplicated."
+      "description": "The Merkle root over the entries, leaves sorted by id in the order snapshot-entry.json states (UTF-16 code units): SHA256(0x00 || canonical) for a leaf, SHA256(0x01 || left || right) for a node, an odd node promoted rather than duplicated."
     },
     "entryCount": {
       "type": "integer",

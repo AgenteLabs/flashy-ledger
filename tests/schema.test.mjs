@@ -471,6 +471,31 @@ test('what the schemas say about the bytes is true: the dataset digest, the coun
   }
 })
 
+test('the order the snapshot schema states is the order sortEntries() uses: UTF-16 code units, which is not the order of the UTF-8 bytes', async (t) => {
+  // The description is what a reader in another language rebuilds a root from, so
+  // what it claims about the order is held to the code, not to a header comment.
+  // It once said "compared byte-wise", which sortEntries() does not do.
+  const prose = `${SNAPSHOT_ROW.description} ${SNAPSHOT_ROW.properties.id.description}`
+  assert.doesNotMatch(SNAPSHOT_ROW.description, /compared byte-wise/, 'the retired claim is back')
+  assert.match(prose, /UTF-16 code units/)
+  assert.match(COMMITMENT.properties.root.description, /UTF-16 code units/, 'commitment: the root description points at the same order')
+
+  const supplementary = '\u{10000}'
+  const bmp = '�'
+  const hexBytes = (s) => Buffer.from(s, 'utf8').toString('hex').match(/../g).join(' ')
+  assert.ok(SNAPSHOT_ROW.description.includes(`U+10000 (UTF-8 ${hexBytes(supplementary)}) sorts before U+FFFD (${hexBytes(bmp)}) here`),
+    'the worked example in the description names the real UTF-8 bytes of both characters')
+  assert.equal(Buffer.compare(Buffer.from(supplementary, 'utf8'), Buffer.from(bmp, 'utf8')), 1, 'the bytes order them the other way round')
+
+  if (!FIXTURES.built) return t.diagnostic(`${UNKNOWN_DIST}; only the prose was checked`)
+  const api = await import(join(ROOT, 'dist', 'index.js'))
+  const row = (id) => ({ id, asset: 'flashy-gold', type: 'issuance', source: 'quest_completion', amountMinor: '1000', recordedAt: '2026-09-28T03:41:00Z' })
+  assert.deepEqual(api.sortEntries([row(bmp), row(supplementary)]).map((e) => e.id), [supplementary, bmp],
+    'sortEntries() puts U+10000 before U+FFFD, as the description says')
+  const [first] = api.toJsonl([row(bmp), row(supplementary)]).split('\n')
+  assert.equal(JSON.parse(first).id, supplementary, 'the snapshot file follows the same order')
+})
+
 test('a snapshot row is refused for an extra key, a numeric or formatted amount, or a malformed time', () => {
   const [row] = FIXTURES.merkle.rows
   assertRefused({ ...row, 'x-trace': 'abc' }, SNAPSHOT_ROW, 'an x- key on a row', /x-trace: unknown key refused/)
