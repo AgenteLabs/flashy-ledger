@@ -1,0 +1,46 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/FlashyLabs/flashy-ledger/schema/snapshot-entry.json",
+  "title": "Snapshot row",
+  "description": "One line of the Merkle snapshot file: the JSON object toJsonl() in src/domain/merkle.ts writes for a SnapshotEntry, with its camelCase fields renamed to snake_case (amountMinor to amount_minor, recordedAt to recorded_at). The file is one object per line, sorted by id ascending and compared byte-wise, and `datasetSha256` on a Commitment is the sha256 of those bytes. Unlike entry.json this schema allows no `x-` keys: toJsonl() writes exactly these six, so a row with a seventh is not one this package could have produced, and a reader who rebuilt the file from the parsed rows could not reproduce the digest. The leaf hash is taken over the six fields joined with U+007C (canonical() in src/domain/merkle.ts). That join is not escaped and nothing in the code refuses a '|' inside a field, so rows that differ only in where a '|' sits share a leaf (measured 2026-10-20: id 'a|b' with asset 'c', and id 'a' with asset 'b|c'). This schema does not forbid it, because the code does not.",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "string",
+      "minLength": 1,
+      "description": "The entry's id. Rows are sorted by it, and the tree's leaves follow that order."
+    },
+    "asset": {
+      "type": "string",
+      "minLength": 1,
+      "description": "The asset the entry moves, as the producer names it."
+    },
+    "type": {
+      "type": "string",
+      "minLength": 1,
+      "description": "What kind of movement it was, as the producer names it."
+    },
+    "source": {
+      "type": "string",
+      "description": "What produced it, as the producer names it."
+    },
+    "amount_minor": {
+      "$ref": "#/$defs/integerString",
+      "description": "Signed integer in minor units, as a decimal string. Never a float, never a formatted number. The leaf hashes this string as written."
+    },
+    "recorded_at": {
+      "type": "string",
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$",
+      "description": "RFC 3339, UTC, seconds precision, as SnapshotEntry documents it. The leaf hashes this string as written."
+    }
+  },
+  "required": ["id", "asset", "type", "source", "amount_minor", "recorded_at"],
+  "additionalProperties": false,
+  "$defs": {
+    "integerString": {
+      "type": "string",
+      "pattern": "^(0|-?[1-9][0-9]*)$",
+      "description": "A signed integer in its one canonical decimal form: no sign on zero, no leading zeros, no plus sign, no separators, no fraction. This states what a producer must write. commit() does not check it: it sums amounts with BigInt() and hashes the raw string, so '', ' 5', '0x10', '007' and '+5' are summed as 0, 5, 16, 7 and 5 while the leaf covers the string as given, and '12.5' throws a SyntaxError (measured 2026-10-20)."
+    }
+  }
+}

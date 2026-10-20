@@ -268,9 +268,10 @@ states those bytes. See `docs/adr/` for the decisions behind the design and
 
 ## Wire shapes
 
-The JSON an entry or an asset takes on a wire, as JSON Schema (draft
-2020-12), for anybody validating what this package emits or consuming it from
-another language:
+The JSON an entry, an asset or a Merkle snapshot takes on a wire, as JSON
+Schema (draft 2020-12), for anybody validating what this package emits or
+consuming it from another language. They live in the repository: the npm
+package's `files` list does not include `schema/`.
 
 - [`schema/entry.json`](./schema/entry.json) — `Entry` from
   `src/domain/entry.ts`. Every amount is an integer in minor units, bounded to
@@ -280,16 +281,33 @@ another language:
 - [`schema/asset.json`](./schema/asset.json) — `Asset` from
   `src/domain/asset.ts`, with the slug, symbol and decimals rules
   `defineAsset()` enforces.
+- [`schema/snapshot-entry.json`](./schema/snapshot-entry.json),
+  [`schema/commitment.json`](./schema/commitment.json) and
+  [`schema/inclusion-proof.json`](./schema/inclusion-proof.json) — the three
+  documents of the Merkle spec in `src/domain/merkle.ts`: a row of the snapshot
+  file as `toJsonl()` writes it, the `Commitment` that `commit()` returns, and
+  the `InclusionProof` that `inclusionProof()` returns. Digests are `0x` and 64
+  lower-case hex characters here, unlike the Entry hash.
 - [`docs/entry-hash.md`](./docs/entry-hash.md) — what `hash` is taken over: the
   twelve fields in order, the U+0000 separator, how null and absent values and
   the instant are written, and what is left out. The schema says only that the
   order is fixed; this is the order.
+- [`schema/entry-hash-vectors.json`](./schema/entry-hash-vectors.json) — that
+  page as data: entries, the strings each reduces to, and the digest. Pinned,
+  not generated: the digests were computed with Python's `hashlib`, outside this
+  codebase, and a new vector is computed the same way.
 
-Both refuse unknown keys unless they are `x-` prefixed. `metadata` is free
-and is not part of the hash. `tests/schema.test.mjs` (`npm run
-test:standalone`, no install needed) builds real entries through `post()`
-and `InMemoryLedgerStore`, validates them, and fails if the `kind` or `class`
-enums or the asset patterns drift from the TypeScript source.
+The schemas refuse unknown keys; the entry, the asset, the commitment and the
+proof allow `x-` prefixed ones, and a snapshot row allows none, because a reader
+who rebuilt the file from parsed rows could not reproduce its digest. `metadata`
+is free and is not part of the hash. `tests/schema.test.mjs` (`npm run
+test:standalone`, no install needed) builds real entries, rows, commitments and
+proofs through `post()`, `InMemoryLedgerStore`, `toJsonl()`, `commit()` and
+`inclusionProof()`, validates them, recomputes the Merkle values with
+`node:crypto`, and fails if the `kind`, `class` or proof-side enums or the asset
+patterns drift from the TypeScript source. `tests/entry-hash-vectors.test.mjs`
+holds the vectors. Both say UNKNOWN, and skip what they cannot see, when `dist/`
+has not been built.
 
 ## Publishing
 

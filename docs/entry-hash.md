@@ -92,8 +92,8 @@ CODEOWNERS routes to `@FlashyLabs/ledger-owners`, and is not made here.
 
 ## A reference in Python
 
-Run under Python 3.11 against the two outside digests in
-`tests/entry-hash.test.ts`, it reproduces both:
+Run under Python 3.11, it reproduces every vector in
+[`schema/entry-hash-vectors.json`](../schema/entry-hash-vectors.json):
 
 ```python
 import hashlib
@@ -124,15 +124,33 @@ def entry_hash(e: dict) -> str:
     return hashlib.sha256("\x00".join(preimage).encode("utf-8")).hexdigest()
 ```
 
-This is the only second implementation, and it has been run against those two
-digests and in no other language.
+This is the only second implementation, and it has been run against those
+vectors and in no other language.
 
 ## Checking an implementation
 
-`tests/entry-hash.test.ts` pins the exact bytes `hashEntry` feeds to sha256.
-Two of its digests were computed outside this codebase with Python's `hashlib`,
-so a change to the format cannot be reconciled by regenerating a snapshot. It
-also covers each exclusion above and every one of the twelve fields changing the
+[`schema/entry-hash-vectors.json`](../schema/entry-hash-vectors.json) is this
+page as data: the separator, the field names in the order of the table above,
+and a handful of entries, each with the twelve strings it reduces to and the
+digest. They cover a null `previousHash`, a negative amount with no source id
+and millisecond precision, and non-ASCII text. A second implementation passes
+when it reproduces every `hash` from its `entry`.
+
+The digests are pinned, not generated. They were computed with Python's
+`hashlib` over the strings joined with `"\x00"`, outside this codebase, because
+a corpus written by the code under test could only ever agree with it. To add a
+vector, compute its digest the same way and never from `hashEntry`.
+`tests/entry-hash-vectors.test.mjs` (`npm run test:standalone`, no install
+needed) holds the file to four things separately: each digest is the sha256 of
+its strings, computed with `node:crypto`; the strings are what the entry's own
+fields give when read in the order of the table above, which the test parses
+from this page; the entry uses only keys `schema/entry.json` knows; and the
+built `hashEntry()` reproduces the digest. With no build it says UNKNOWN and
+skips that last check. It does not pass.
+
+`tests/entry-hash.test.ts` pins the exact bytes `hashEntry` feeds to sha256 from
+inside the package. Two of its digests are the first two vectors here. It also
+covers each exclusion above and every one of the twelve fields changing the
 hash.
 
 ## The separator is a literal byte in the source

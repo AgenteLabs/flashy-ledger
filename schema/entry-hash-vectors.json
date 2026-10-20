@@ -1,0 +1,123 @@
+{
+  "$comment": "Conformance vectors for the Entry hash preimage (src/domain/entry.ts, hashEntry). Hash = lower-case hex sha256 over the twelve `preimage` strings joined by a single U+0000 character, UTF-8 encoded. Every hash here was computed OUTSIDE this codebase with python3 hashlib, so a change to the format cannot be reconciled by regenerating a snapshot. `metadata` and `source.description` are not hashed. Changing the fields or their order invalidates every existing chain.",
+  "title": "Entry hash vectors",
+  "separator": "U+0000",
+  "fields": [
+    "previousHash (null is the empty string)",
+    "tenantId",
+    "identityId",
+    "assetId",
+    "amount",
+    "balanceBefore",
+    "balanceAfter",
+    "kind",
+    "source.type",
+    "source.id (absent is the empty string)",
+    "idempotencyKey",
+    "occurredAt (ISO 8601 UTC with milliseconds, as Date.toISOString())"
+  ],
+  "vectors": [
+    {
+      "name": "first entry of a chain: null previousHash is the empty string",
+      "entry": {
+        "tenantId": "flashy",
+        "identityId": "identity_1",
+        "assetId": "asset_fg",
+        "amount": 2500,
+        "balanceBefore": 0,
+        "balanceAfter": 2500,
+        "kind": "EARN",
+        "source": {
+          "type": "quest",
+          "id": "q_1"
+        },
+        "idempotencyKey": "quest:q_1",
+        "occurredAt": "2026-08-12T00:00:00.000Z",
+        "previousHash": null
+      },
+      "preimage": [
+        "",
+        "flashy",
+        "identity_1",
+        "asset_fg",
+        "2500",
+        "0",
+        "2500",
+        "EARN",
+        "quest",
+        "q_1",
+        "quest:q_1",
+        "2026-08-12T00:00:00.000Z"
+      ],
+      "hash": "45170c1d3a85e9df66337c08fa17f517e8b7d6a67f103332cdbb9fe259509bae"
+    },
+    {
+      "name": "chained, negative amount, no source id, millisecond precision",
+      "entry": {
+        "tenantId": "tenant_b",
+        "identityId": "identity_2",
+        "assetId": "asset_wht",
+        "amount": -7,
+        "balanceBefore": 10,
+        "balanceAfter": 3,
+        "kind": "SPEND",
+        "source": {
+          "type": "game"
+        },
+        "idempotencyKey": "spend:s_9",
+        "occurredAt": "2026-08-12T10:20:30.123Z",
+        "previousHash": "abababababababababababababababababababababababababababababababab"
+      },
+      "preimage": [
+        "abababababababababababababababababababababababababababababababab",
+        "tenant_b",
+        "identity_2",
+        "asset_wht",
+        "-7",
+        "10",
+        "3",
+        "SPEND",
+        "game",
+        "",
+        "spend:s_9",
+        "2026-08-12T10:20:30.123Z"
+      ],
+      "hash": "97498dce3f5ef2d4fde93e3d8f75bf499f3ee469ab8d707da8c7f8937bf0c87f"
+    },
+    {
+      "name": "non-ASCII text is hashed as UTF-8",
+      "entry": {
+        "tenantId": "flashy",
+        "identityId": "identity_é",
+        "assetId": "asset_fg",
+        "amount": 100,
+        "balanceBefore": 0,
+        "balanceAfter": 100,
+        "kind": "REVERSAL",
+        "source": {
+          "type": "reversal",
+          "id": "quête:1",
+          "description": "not hashed"
+        },
+        "idempotencyKey": "reversal:quête:1",
+        "occurredAt": "2026-08-12T23:59:59.999Z",
+        "previousHash": null
+      },
+      "preimage": [
+        "",
+        "flashy",
+        "identity_é",
+        "asset_fg",
+        "100",
+        "0",
+        "100",
+        "REVERSAL",
+        "reversal",
+        "quête:1",
+        "reversal:quête:1",
+        "2026-08-12T23:59:59.999Z"
+      ],
+      "hash": "914b62dfdb2bfc9238b49d8a59e7ef27046c0e688dbdf49a59355f7a5ada7d92"
+    }
+  ]
+}
