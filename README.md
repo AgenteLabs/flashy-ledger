@@ -134,6 +134,13 @@ at a time.
 | **Idempotent writes** | Retries are constant at scale | Unique `idempotencyKey`; a replay returns the original |
 | **Balances are derived** | A cache can be rebuilt; a truth cannot | `balanceOf()` folds entries; stores hold projections |
 
+These are the headline set, not the whole list. [`docs/INVARIANTS.md`](./docs/INVARIANTS.md)
+numbers every guarantee this package makes and names the test behind each; it
+also covers tenant isolation, all-or-nothing consumption, opaque identities, one
+head per chain and a pure domain, which this table does not. The PR template
+asks about these five and adds the tenant scope and the pure domain. The table
+itself stays as it is: The Strike, below, commits to a sentence built from it.
+
 ## Layout
 
 ```
@@ -255,8 +262,9 @@ past it is labelled North Star until its code ships.
 registry yet ([Publishing](#publishing)). The entry format and the hash input
 are what a major version pins: changing the fields `hashEntry` joins, or
 their order, invalidates every existing chain and is a breaking change with a
-re-hashing plan, never a refactor. See `docs/adr/` for the decisions behind
-the design and [Wire shapes](#wire-shapes) for the format as it stands.
+re-hashing plan, never a refactor. [`docs/entry-hash.md`](./docs/entry-hash.md)
+states those bytes. See `docs/adr/` for the decisions behind the design and
+[Wire shapes](#wire-shapes) for the format as it stands.
 
 ## Wire shapes
 
@@ -272,6 +280,10 @@ another language:
 - [`schema/asset.json`](./schema/asset.json) — `Asset` from
   `src/domain/asset.ts`, with the slug, symbol and decimals rules
   `defineAsset()` enforces.
+- [`docs/entry-hash.md`](./docs/entry-hash.md) — what `hash` is taken over: the
+  twelve fields in order, the U+0000 separator, how null and absent values and
+  the instant are written, and what is left out. The schema says only that the
+  order is fixed; this is the order.
 
 Both refuse unknown keys unless they are `x-` prefixed. `metadata` is free
 and is not part of the hash. `tests/schema.test.mjs` (`npm run
@@ -302,8 +314,8 @@ section with the version and date, and add the row to `RELEASES.md`.
 
 ## The invariants
 
-Six guarantees, numbered so they can be cited in an audit, each mapped to the
-test that proves it: `docs/INVARIANTS.md`. The mapping is itself asserted —
+Every guarantee this package makes, numbered so it can be cited in an audit and
+mapped to the test that proves it: `docs/INVARIANTS.md`. The mapping is itself asserted —
 `tests/invariants.test.ts` fails the build if the document cites a test that no
 longer exists, so a rename cannot quietly hollow out the spec.
 

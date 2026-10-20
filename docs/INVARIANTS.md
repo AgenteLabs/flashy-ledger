@@ -41,6 +41,24 @@ digests computed outside this codebase:
 › *hashes the twelve fields, in order, joined by NUL, to a vector computed outside this codebase*,
 › *matches a second outside vector: chained, negative, no source id, millisecond precision* and
 › *joins with a NUL byte and nothing else*.
+[`entry-hash.md`](./entry-hash.md) states those bytes for a reader outside this
+repository.
+
+A correction is a new entry that points at what it corrects, and
+`reversal.test.ts` runs `reverse()` through a store:
+› *lands as a new entry, not a replay of the original, and returns the balance to where it began*,
+› *carries the original’s tenant, identity and asset, and points its source at the original* —
+the reference the claim asks a correction to carry — and
+› *still reverses once the credited funds have been spent, taking the balance below zero*,
+so a correction after the money has moved is recorded rather than refused.
+
+`verifyChain` is what finds an edit or a removal, and `verify-chain.test.ts`
+breaks its rules one at a time and asserts the complete list of problems rather
+than a pattern:
+› *content: an edit to a hashed field that was not re-sealed is the only problem reported*,
+› *link: an entry that does not chain onto its predecessor is the only problem reported* and
+› *start: a chain whose first entry names a predecessor has lost its beginning*.
+The last is how history trimmed from the front is noticed.
 
 ## I-2 · Signed integer minor units
 
@@ -76,6 +94,11 @@ no API that takes a magnitude and a direction.
 
 **Proved by.** `ledger.test.ts` › *debits with a negative amount, one convention throughout*,
 and › *produces a matched debit and credit, never a bare balance edit*.
+A transfer takes one positive magnitude and derives both signs, so there is no
+direction to hand it, and `transfer-guards.test.ts` holds the guard that keeps it
+so: › *refuses a negative amount, which would debit a recipient who never consented*.
+The refusal carries the code `ZERO_AMOUNT`, whose message talks about zero; the
+code is what a caller switches on.
 
 ## I-4 · Idempotent writes
 
@@ -97,6 +120,13 @@ interleaving, `invariants-harness.test.ts`
 › *the same key appended twice, under every schedule: one entry on the record, both callers handed it, exactly one reported as new* —
 sequential, both orders, started together, a macrotask apart — with the
 mutation check › *refuses a store that forgot its key index: the replay lands twice on every schedule*.
+A transfer is two writes from one source event, so it carries two keys, and
+`transfer-guards.test.ts` pins them:
+› *keys the legs exactly `<key>:out` and `<key>:in`, debit first* and
+› *returns both legs deduplicated and leaves both balances unchanged* when the
+same transfer is retried. A reversal derives its key from the entry it reverses,
+and `reversal.test.ts` shows the consequence:
+› *lands once when the same original is reversed twice, with state re-read each time*.
 
 ## I-5 · Balances are derived
 
@@ -116,7 +146,11 @@ per identity. Under random sequences of `post`, `postTransfer`, `reverse`, a
 replay and a write against a stale head, `invariants-harness.test.ts`
 › *every stored balance is the fold over its entries, every chain verifies, every head is the last entry, and no balance goes negative except by a reversal* —
 the stored state is compared to the fold after every command, so a store
-whose projection can part from its entries fails the run.
+whose projection can part from its entries fails the run. Within one chain,
+`verify-chain.test.ts` catches the balances recorded on the entries parting from
+each other, one rule each:
+› *continuity: an entry that opens at a different balance than its predecessor closed at is the only problem reported* and
+› *arithmetic: an entry whose amount does not account for its own movement is the only problem reported*.
 
 ## I-6 · Tenant isolation
 
@@ -140,6 +174,19 @@ every adapter, of which four were verified to fail against the pre-0.2
 implementation. The two that name the money bugs directly:
 › *lets two tenants use the same idempotency key without deduplicating* and
 › *scopes findByIdempotencyKey, so a lookup never returns another tenants entry*.
+
+`GoldLedgerReader` is read-only and so outside that catalog (see *Coverage*).
+`gold-ledger-tenancy.test.ts` holds it directly, with two tenants that share a
+customer id, an asset id and an idempotency key:
+› *findByIdempotencyKey returns the asked tenant’s entry and never the other’s*,
+› *readState reports the asked tenant’s balance, and an empty one for a stranger* and
+› *readEntries returns only the asked tenant’s entries, and stamps each with that tenant*.
+
+**Known exception.** `GoldLedgerReader.verifyBalance` compares the tenant-scoped
+ledger balance with a wallet document it finds by `customerId` alone, because the
+wallet record carries no tenant. Its ledger half is scoped and its wallet half is
+not; `gold-ledger.test.ts` checks the comparison, and no test here checks the
+wallet half against a second tenant.
 
 ## I-7 · All or nothing consumption
 
@@ -207,6 +254,12 @@ guards the one consumer this package has. The surrogate is held to
 › *produces something the guard accepts* — otherwise the advice in the error
 message would be wrong — and
 › *refuses a salt short enough to be brute-forced*.
+The derivation itself is pinned by `surrogate-identity.test.ts` to digests
+computed outside this codebase:
+› *derives sha256 of `<salt> <value>` to a vector computed outside this codebase* and
+› *matches a second tenant vector, so the salt is part of the preimage and not decoration*,
+and the floor is held at its edge by
+› *refuses a 15-character salt and accepts a 16-character one*.
 
 ## I-9 · One head per chain
 
@@ -235,7 +288,9 @@ on one head mean anything.
 **Proved by.** `conformance.test.ts` › *refuses a second append on a head another append has already moved*
 and › *refuses a batch whose entries fork one chain, and lands neither*, both
 run against every adapter; and `ledger.test.ts`
-› *refuses a transfer from an identity to itself, which would fork its chain and mint the amount*.
+› *refuses a transfer from an identity to itself, which would fork its chain and mint the amount*;
+`transfer-guards.test.ts` adds that the refusal comes first:
+› *is refused with SELF_TRANSFER before any leg is built*.
 
 Those run the race in the order the test chose. Under interleaving,
 `invariants-harness.test.ts`

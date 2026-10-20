@@ -39,10 +39,16 @@ import {
  *
  * ON AMOUNTS
  * ──────────
- * Minor units are integers and can exceed 2^53 over a long-lived ledger, so
- * they are stored as BSON `Long` via the driver's `Int64`-ish handling and
- * converted at this boundary only. The domain never sees a Mongo type and this
- * file never does arithmetic.
+ * Minor units are whole numbers. They are written as decimal strings by
+ * default, and as numbers when the field map says `amountEncoding: 'number'`
+ * (a collection being adopted whose readers already expect a number); see
+ * `encodeAmount`. They are read back through `Number()` and `minor()`, so a
+ * stored value is accepted only if it is a whole number no larger in magnitude
+ * than `Number.MAX_SAFE_INTEGER`: a fraction, or anything beyond that, throws
+ * `PrecisionError` rather than being rounded. The string encoding does not
+ * widen that range, which is the domain's — a value above 2^53 cannot be read
+ * back by this adapter. The domain never sees a Mongo type and this file never
+ * does arithmetic.
  */
 
 /** The document shape. Deliberately explicit rather than inferred from Entry. */
