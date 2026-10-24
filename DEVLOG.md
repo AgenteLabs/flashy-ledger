@@ -3,6 +3,10 @@
 _This is the changelog. "Devlog" and "changelog" name the same document here —_
 _see `devlog/1` in `packages/shiplog/SPEC.md` if that reads like it needs reconciling._
 
+## 2026-10-24
+
+- Merge pull request #20 from AgenteLabs/claude/dreamy-bell-2e5nq3 ([`972d1e846377`](https://github.com/FlashyLabs/flashy-ledger/commit/972d1e846377545c88b124769d540f8e3311409d))
+
 ## 2026-10-14
 
 - Merge pull request #15 from FlashyLabs/claude/ceo-estate-dashboard-gmtgl8 ([`f956f7b7c35a`](https://github.com/FlashyLabs/flashy-ledger/commit/f956f7b7c35a14f274f894748b275c055baad621))

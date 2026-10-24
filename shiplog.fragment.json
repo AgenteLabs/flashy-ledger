@@ -2,8 +2,27 @@
   "shipped": "1",
   "source": "repo/flashy-ledger",
   "org": "org/flashy-ledger",
-  "generated": "2026-10-24T08:56:24.201Z",
+  "generated": "2026-10-24T10:17:43.982Z",
   "entries": [
+    {
+      "id": "ship/flashy-ledger/972d1e846377",
+      "repo": "repo/flashy-ledger",
+      "at": "2026-10-24T17:17:33+07:00",
+      "kind": "feature",
+      "title": "Merge pull request #20 from AgenteLabs/claude/dreamy-bell-2e5nq3",
+      "by": [
+        "person/michael"
+      ],
+      "asserted": "2026-10-24",
+      "assertedBy": "agent/flashy-ledger-ci",
+      "visibility": "public",
+      "detail": "Pin the entry hash bytes with outside vectors; schema the Merkle snapshot; tests for transfer guards, reversal and verifyChain; docs corrected",
+      "refs": {
+        "commit": "972d1e846377545c88b124769d540f8e3311409d",
+        "pr": "https://github.com/FlashyLabs/flashy-ledger/pull/20"
+      },
+      "digest": "bdfd865acc208f0b5bb7cc49c82468cb5be8db18531c906ea2ccfe52074817fe"
+    },
     {
       "id": "ship/flashy-ledger/7d502b4e7e7f",
       "repo": "repo/flashy-ledger",
