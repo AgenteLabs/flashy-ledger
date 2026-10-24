@@ -134,6 +134,13 @@ at a time.
 | **Idempotent writes** | Retries are constant at scale | Unique `idempotencyKey`; a replay returns the original |
 | **Balances are derived** | A cache can be rebuilt; a truth cannot | `balanceOf()` folds entries; stores hold projections |
 
+These are the headline set, not the whole list. [`docs/INVARIANTS.md`](./docs/INVARIANTS.md)
+numbers every guarantee this package makes and names the test behind each; it
+also covers tenant isolation, all-or-nothing consumption, opaque identities, one
+head per chain and a pure domain, which this table does not. The PR template
+asks about these five and adds the tenant scope and the pure domain. The table
+itself stays as it is: The Strike, below, commits to a sentence built from it.
+
 ## Layout
 
 ```
@@ -255,14 +262,16 @@ past it is labelled North Star until its code ships.
 registry yet ([Publishing](#publishing)). The entry format and the hash input
 are what a major version pins: changing the fields `hashEntry` joins, or
 their order, invalidates every existing chain and is a breaking change with a
-re-hashing plan, never a refactor. See `docs/adr/` for the decisions behind
-the design and [Wire shapes](#wire-shapes) for the format as it stands.
+re-hashing plan, never a refactor. [`docs/entry-hash.md`](./docs/entry-hash.md)
+states those bytes. See `docs/adr/` for the decisions behind the design and
+[Wire shapes](#wire-shapes) for the format as it stands.
 
 ## Wire shapes
 
-The JSON an entry or an asset takes on a wire, as JSON Schema (draft
-2020-12), for anybody validating what this package emits or consuming it from
-another language:
+The JSON an entry, an asset or a Merkle snapshot takes on a wire, as JSON
+Schema (draft 2020-12), for anybody validating what this package emits or
+consuming it from another language. They live in the repository: the npm
+package's `files` list does not include `schema/`.
 
 - [`schema/entry.json`](./schema/entry.json) — `Entry` from
   `src/domain/entry.ts`. Every amount is an integer in minor units, bounded to
@@ -272,12 +281,33 @@ another language:
 - [`schema/asset.json`](./schema/asset.json) — `Asset` from
   `src/domain/asset.ts`, with the slug, symbol and decimals rules
   `defineAsset()` enforces.
+- [`schema/snapshot-entry.json`](./schema/snapshot-entry.json),
+  [`schema/commitment.json`](./schema/commitment.json) and
+  [`schema/inclusion-proof.json`](./schema/inclusion-proof.json) — the three
+  documents of the Merkle spec in `src/domain/merkle.ts`: a row of the snapshot
+  file as `toJsonl()` writes it, the `Commitment` that `commit()` returns, and
+  the `InclusionProof` that `inclusionProof()` returns. Digests are `0x` and 64
+  lower-case hex characters here, unlike the Entry hash.
+- [`docs/entry-hash.md`](./docs/entry-hash.md) — what `hash` is taken over: the
+  twelve fields in order, the U+0000 separator, how null and absent values and
+  the instant are written, and what is left out. The schema says only that the
+  order is fixed; this is the order.
+- [`schema/entry-hash-vectors.json`](./schema/entry-hash-vectors.json) — that
+  page as data: entries, the strings each reduces to, and the digest. Pinned,
+  not generated: the digests were computed with Python's `hashlib`, outside this
+  codebase, and a new vector is computed the same way.
 
-Both refuse unknown keys unless they are `x-` prefixed. `metadata` is free
-and is not part of the hash. `tests/schema.test.mjs` (`npm run
-test:standalone`, no install needed) builds real entries through `post()`
-and `InMemoryLedgerStore`, validates them, and fails if the `kind` or `class`
-enums or the asset patterns drift from the TypeScript source.
+The schemas refuse unknown keys; the entry, the asset, the commitment and the
+proof allow `x-` prefixed ones, and a snapshot row allows none, because a reader
+who rebuilt the file from parsed rows could not reproduce its digest. `metadata`
+is free and is not part of the hash. `tests/schema.test.mjs` (`npm run
+test:standalone`, no install needed) builds real entries, rows, commitments and
+proofs through `post()`, `InMemoryLedgerStore`, `toJsonl()`, `commit()` and
+`inclusionProof()`, validates them, recomputes the Merkle values with
+`node:crypto`, and fails if the `kind`, `class` or proof-side enums or the asset
+patterns drift from the TypeScript source. `tests/entry-hash-vectors.test.mjs`
+holds the vectors. Both say UNKNOWN, and skip what they cannot see, when `dist/`
+has not been built.
 
 ## Publishing
 
@@ -302,8 +332,8 @@ section with the version and date, and add the row to `RELEASES.md`.
 
 ## The invariants
 
-Six guarantees, numbered so they can be cited in an audit, each mapped to the
-test that proves it: `docs/INVARIANTS.md`. The mapping is itself asserted —
+Every guarantee this package makes, numbered so it can be cited in an audit and
+mapped to the test that proves it: `docs/INVARIANTS.md`. The mapping is itself asserted —
 `tests/invariants.test.ts` fails the build if the document cites a test that no
 longer exists, so a rename cannot quietly hollow out the spec.
 

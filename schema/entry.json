@@ -70,7 +70,7 @@
     },
     "hash": {
       "$ref": "#/$defs/sha256",
-      "description": "sha256 over the hashed fields in the fixed order hashEntry() defines, chained onto previousHash. Changing the field set or order invalidates every existing chain."
+      "description": "sha256 over the hashed fields in the fixed order hashEntry() defines, chained onto previousHash. Changing the field set or order invalidates every existing chain. The twelve fields, their order, the U+0000 separator and how each is written as text are specified in docs/entry-hash.md, and pinned by the conformance vectors in schema/entry-hash-vectors.json."
     },
     "metadata": {
       "type": "object",

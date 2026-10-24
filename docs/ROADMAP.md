@@ -30,14 +30,15 @@ the point.
 
 The hard half already ships: append-only, content-hashed, chain-verified,
 deterministically replayable double-entry, with tenant isolation enforced (not
-merely labelled) and the five invariants in [`docs/INVARIANTS.md`](./INVARIANTS.md).
+merely labelled) and the numbered invariants in [`docs/INVARIANTS.md`](./INVARIANTS.md).
 Phase 1 completes the primitive around **agents as first-class signers**.
 
 - **Canonical event schema** — one versioned shape for every autonomous action,
   so a 2029 event still parses. *(NORTH STAR)*
 - **Agent + organization signatures** — every event carries who signed it (the
-  agent key) and under whose authority (the org key). Today the ledger names
-  `actorId` and `approvalId` referentially; this makes them cryptographic.
+  agent key) and under whose authority (the org key). Today an Entry has no
+  field for either: a caller can carry such a reference only in `metadata`,
+  which is free-form and not part of the hash. This makes them cryptographic.
   *(NORTH STAR)*
 - **Signed-intent envelope** — the `intent → authorization → execution` chain
   recorded, so a reader verifies the agent was authorized *before* it acted.

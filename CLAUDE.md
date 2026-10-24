@@ -105,7 +105,17 @@ it as a breaking migration with a re-hashing plan, never a refactor.
 `schema/entry.json` and `schema/asset.json` are the machine-readable wire
 shapes (JSON Schema 2020-12; amounts are integers; unknown keys refused
 unless `x-`), and `tests/schema.test.mjs` fails if their enums or patterns
-drift from the TypeScript source.
+drift from the TypeScript source. `schema/snapshot-entry.json`,
+`commitment.json` and `inclusion-proof.json` do the same for the Merkle
+snapshot documents.
+
+`docs/entry-hash.md` states the bytes `hashEntry()` hashes and
+`schema/entry-hash-vectors.json` pins them: digests computed outside the
+codebase, pinned rather than generated — never regenerate one from `hashEntry`.
+The separator is one literal U+0000 byte in `src/domain/entry.ts`, so git calls
+the file binary and `git diff` shows no line diff of it; review it with
+`git diff --text`, and do not edit it with a tool that might not preserve the
+byte.
 
 ## Rules the tests enforce — none decorative
 
@@ -116,6 +126,15 @@ drift from the TypeScript source.
   adapter, a port, an I/O builtin or a third-party package (I-10).
 - `tests/adapter-coverage.test.ts`: every exported writable store is in the
   conformance catalog and every cataloged store is exported.
+- `tests/entry-hash-vectors.test.mjs`: the pinned vectors reproduce from their
+  own strings with `node:crypto`, from the field order in `docs/entry-hash.md`,
+  and from the built `hashEntry()`.
+- `tests/package-surface.test.mjs`: every target in the `exports` map exists,
+  `files` ships both builds, `dist-cjs` carries its CommonJS marker, and the
+  CommonJS and ESM builds export the same names and hash alike.
+- `tests/docs-drift.test.ts`: the README states no count of the invariants
+  other than the one `docs/INVARIANTS.md` numbers, and `CHANGELOG.md` has a
+  section for the declared version and for every version `RELEASES.md` records.
 - `tests/public-api.test.ts` lists every export by hand. Removing one is a
   major version, and the list is deliberately not a generated snapshot.
 - `tests/workflow-pins.test.ts`: every third-party `uses:` in a workflow is
