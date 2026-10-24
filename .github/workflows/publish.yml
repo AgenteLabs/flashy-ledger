@@ -44,7 +44,7 @@ jobs:
           # on the working directory already having a correct .npmrc.
           #
           # Not @flashy: GitHub Packages requires the npm scope to exactly
-          # match the GitHub account that owns the repo (FlashyLabs), or it
+          # match the GitHub account that owns the repo (AgenticLabs), or it
           # refuses to create the package regardless of token permissions —
           # this is what "installation does not exist" / "permission_denied:
           # create_package" actually meant, on every prior publish attempt.
