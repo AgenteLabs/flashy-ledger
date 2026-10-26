@@ -25,7 +25,7 @@ assignees: ""
 
 ## Environment
 
-- `@flashylabs/ledger` version:
+- `@flashyos/ledger` version:
 - Node version:
 - Store adapter (memory / mongo / your own):
 - If mongo: driver version, and whether `ensureIndexes()` has run

@@ -22,7 +22,7 @@ name: Publish
 # by no workflow in this repository.
 #
 # One secret: NPM_TOKEN, an npm access token with publish rights on the
-# @flashylabs scope (README, "Publishing"). Without it the job REFUSES,
+# @flashyos scope (README, "Publishing"). Without it the job REFUSES,
 # before installing anything — there is no fallback registry to land on by
 # accident.
 on:
@@ -48,7 +48,7 @@ jobs:
         with:
           node-version: 22
           cache: npm
-          # setup-node writes `@flashylabs:registry=<registry-url>` into the
+          # setup-node writes `@flashyos:registry=<registry-url>` into the
           # userconfig it points NPM_CONFIG_USERCONFIG at, and a SCOPED
           # registry entry beats both publishConfig.registry and --registry.
           # That is the mechanism that once sent an npmjs token to GitHub
@@ -56,7 +56,7 @@ jobs:
           # package.json's own publishConfig and cannot be overridden by a
           # stray .npmrc in the checkout.
           registry-url: https://registry.npmjs.org
-          scope: "@flashylabs"
+          scope: "@flashyos"
 
       # Fail closed, first. A publish that "succeeds" by falling back to a
       # token-less registry, or that gets as far as the PUT before finding
@@ -67,7 +67,7 @@ jobs:
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: |
           if [ -z "$NPM_TOKEN" ]; then
-            echo "::error::NPM_TOKEN is not set. Add an npm access token with publish rights on @flashylabs as a repository secret named NPM_TOKEN (see README, Publishing). Nothing was published." >&2
+            echo "::error::NPM_TOKEN is not set. Add an npm access token with publish rights on @flashyos as a repository secret named NPM_TOKEN (see README, Publishing). Nothing was published." >&2
             exit 1
           fi
 

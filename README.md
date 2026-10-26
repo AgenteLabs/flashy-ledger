@@ -1,4 +1,4 @@
-# @flashylabs/ledger
+# @flashyos/ledger
 
 ```
         ██
@@ -47,7 +47,7 @@ chain — without its rules changing.
 **Consumer** — once published (it is not yet; see **Publishing**, below):
 
 ```bash
-npm install @flashylabs/ledger
+npm install @flashyos/ledger
 ```
 
 **Developer** — clone and check:
@@ -62,7 +62,7 @@ npm run check     # typecheck + lint + tests with coverage gates + standalone no
 ```ts
 import {
   InMemoryLedgerStore, post, fromDecimal, type Asset,
-} from '@flashylabs/ledger'
+} from '@flashyos/ledger'
 
 const gold: Asset = {
   id: 'asset_fg', slug: 'flashy-gold', symbol: 'FG',
@@ -311,9 +311,13 @@ has not been built.
 
 ## Publishing
 
-**Not yet on the public registry.** `npm view @flashylabs/ledger --registry
-https://registry.npmjs.org/` answered 404 on 2026-09-28. Versions up to
-0.8.0 were published to GitHub Packages (see [`RELEASES.md`](./RELEASES.md)),
+**Not yet on the public registry, and not under the old name.** The package is
+`@flashyos/ledger`. `@flashylabs/ledger` was published to GitHub Packages up to
+0.8.0 and that scope stopped resolving when the GitHub account was renamed, so
+nothing is installable under it any more. `npm view @flashyos/ledger --registry
+https://registry.npmjs.org/` answered 404 on 2026-10-26; the first release
+under the new name is 1.0.1 (1.0.0 was tagged but never published, see
+[`RELEASES.md`](./RELEASES.md)). Versions up to 0.8.0 stay on GitHub Packages,
 which needs a token even to read a public package — so that is no longer the
 target.
 
@@ -324,7 +328,7 @@ the publish lands. It needs exactly one repository secret:
 
 | Secret | What | Where it comes from |
 |---|---|---|
-| `NPM_TOKEN` | An npm access token with publish rights on the `@flashylabs` scope (granular token: read and write on the package or scope, with 2FA bypass for automation) | npmjs.com → Access Tokens; store it only as a GitHub Actions secret, never in a file |
+| `NPM_TOKEN` | An npm access token with publish rights on the `@flashyos` scope (granular token: read and write on the package or scope, with 2FA bypass for automation) | npmjs.com → Access Tokens; store it only as a GitHub Actions secret, never in a file |
 
 Without it the workflow refuses to run — it does not fall back to another
 registry. When the first publish lands, replace the first sentence of this

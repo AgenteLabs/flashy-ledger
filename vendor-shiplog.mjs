@@ -228,6 +228,30 @@ export function isMachineAddress(email) {
   return MACHINE_LOCAL_PARTS.has(address.split('@')[0])
 }
 
+/**
+ * Third-party bots whose address names a single app, so canon names them.
+ *
+ * `agent/unattributed` is right for a machine address nobody has named and
+ * wrong for one that can only be a single app: Dependabot merges had sealed as
+ * unattributed in four repositories by 2026-10-19, and each holds that set to a
+ * frozen list. A closed list of two, in GitHub's own two address shapes —
+ * `<name>[bot]@users.noreply.github.com` and the same with the app's numeric id
+ * in front. Anchored both ends, so look-alikes such as `fake-dependabot[bot]@…`
+ * or `dependabot[bot]@evil.example` do not match. The address is what a commit
+ * CLAIMS: a git author email is self-asserted and canon does not verify it.
+ * `github-actions[bot]` is deliberately absent: the estate's author register
+ * says mapping it to an agent would inflate the agent share.
+ *
+ * Null means canon has no opinion; the caller falls through to the machine rule.
+ */
+export const CANON_BOT_AGENTS = Object.freeze(['dependabot', 'renovate'])
+const CANON_BOT_RE = new RegExp(`^(?:\\d+\\+)?(${CANON_BOT_AGENTS.join('|')})\\[bot\\]@users\\.noreply\\.github\\.com$`)
+
+export function canonBotAgent(email) {
+  const match = CANON_BOT_RE.exec(String(email).toLowerCase().trim())
+  return match ? `agent/${match[1]}` : null
+}
+
 
 /**
  * A commit this format's own workflows made, refreshing a file they generate.
@@ -331,6 +355,11 @@ export function fromCommits(commits, options) {
   const nodeFor = (email) => {
     const mapped = authors[email.toLowerCase()]
     if (mapped) return mapped
+    // Canon resolves a recognised bot, so there is nothing for the repository
+    // to fix and the address is not reported as unmapped. `authors` was
+    // consulted first and still wins.
+    const bot = canonBotAgent(email)
+    if (bot) return bot
     unmapped.add(email)
     // `defaultAuthor` is a fallback for a *person* whose address is not in the
     // table yet. An address that is plainly a machine's must never reach it.

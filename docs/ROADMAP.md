@@ -1,6 +1,6 @@
 # The Flashy Anchor Doctrine — ledger roadmap
 
-This is the canonical, verifiable home for where `@flashylabs/ledger` is going.
+This is the canonical, verifiable home for where `@flashyos/ledger` is going.
 Every other surface in the estate that describes the ledger's future defers to
 this file. It is published in the open because the whole thesis is *verify,
 don't trust*: a proof layer that hid its own roadmap would be the one

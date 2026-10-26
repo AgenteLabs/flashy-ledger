@@ -1,4 +1,4 @@
-# Release ledger — @flashylabs/ledger
+# Release ledger — @flashyos/ledger
 
 The versions this package has declared, whether each was tagged, and whether the
 publish actually landed. It exists because a package whose whole pitch is
@@ -57,6 +57,7 @@ tagged never succeeded.
 | 0.7.0 | `6af5ee1` | ❌ | never dispatched | "declare the civilization commodities"; superseded by 0.8.0 the same day |
 | 0.8.0 | `e52704b` | ✅ v0.8.0 | **landed** (run 14) | same shape as 0.6.3. Tagged 2026-09-05; runs 15 and 16 both answered E409 |
 | 1.0.0 | `eac50d8` | ⚠️ `v1.0.0` unbacked | ❌ **ENEEDAUTH** (not on either registry) | "Bump to 1.0.0 for npm publication". The bump commit forgot this row, so `releases.test.ts` was red. The three `publish.yml` runs on 2026-09-25 built the 1.0.0 tarball (89 files, 311 kB) and every one failed at **Publish to npm** with `npm error code ENEEDAUTH` — never authenticated to `npm.pkg.github.com`, the target at the time. `npm view` on registry.npmjs.org answered 404 on 2026-09-28. `origin`'s `v1.0.0` tag points at `1a8aba6` ("Allow test failures for now"), so it backs **no published release** — the one thing the rule below forbids; a local tag of the same name has pointed at `eac50d8` — two tags, one name; read `git ls-remote --tags origin` before trusting either. The tag is still a valid git ref, so a consumer can install from it (`#v1.0.0` builds via `prepare`); it is just not on a registry. See the 2026-10-05 note. The 1.0.0 tree now carries four fixes our own interleaving audit found behind the green suite, so the publish that finally lands on npmjs will have them: `post`/`postTransfer` re-assert the `Minor` brand at runtime (a JSON body can no longer hash a NaN, a fraction or a string into a chain); the reference `InMemoryLedgerStore.appendAll` guards the chain head, so two concurrent appends cannot both land and fork it (invariant I-9, one head per chain); and a transfer from an identity to itself is refused (`SELF_TRANSFER`) rather than forking the chain and minting. The `invariants/1` harness from spec-kit is vendored and drives these under concurrency with a mutation check each |
+| 1.0.1 | — | ❌ | pending | First release under `@flashyos/ledger` (the `@flashylabs` scope no longer resolves after the account rename). Same tree as the declared 1.0.0, which was tagged but never published; 1.0.1 because `v1.0.0` already exists on the remote and the dispatch flow refuses an already-tagged version |
 
 **Confirmed 2026-09-05.** Pushing v0.6.3 and v0.8.0 fired the tag flow, and both
 runs reached `npm publish` and stopped at **E409 Cannot publish over existing
@@ -100,7 +101,7 @@ version actually published. flashy.gold pins `#v0.8.0` for exactly this reason.
 
 **Since 2026-09-28 the public npm registry is the target, not a mirror.**
 `publishConfig` and `publish.yml` point at `registry.npmjs.org`; the workflow
-refuses to run without **`NPM_TOKEN`** (publish rights on `@flashylabs`)
+refuses to run without **`NPM_TOKEN`** (publish rights on `@flashyos`)
 rather than landing anywhere else. GitHub Packages, which requires a token
 even for a public package, keeps the versions above and receives no new ones.
 Nothing is on the public registry yet — README, "Publishing". What remains is

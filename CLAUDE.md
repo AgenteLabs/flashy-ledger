@@ -1,4 +1,4 @@
-# flashy-ledger — `@flashylabs/ledger`
+# flashy-ledger — `@flashyos/ledger`
 
 An append-only, multi-asset, storage-agnostic settlement ledger, published as
 a TypeScript library (ESM and CJS builds, no runtime dependencies; `mongodb`

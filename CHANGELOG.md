@@ -5,6 +5,18 @@ versions follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [1.0.1] — pending first publish
+
+### Changed
+
+- **The package is now `@flashyos/ledger`.** The GitHub account was renamed and
+  GitHub Packages ties a scope to the account, so `@flashylabs/ledger` stopped
+  resolving for every consumer (claimyour.gold's `npm ci` 404'd on 2026-10-26).
+  Publishing is to the public npm registry under the `@flashyos` organisation.
+  No API changes: this is the 1.0.0 tree below under a new name and version
+  (`v1.0.0` is already tagged on the remote with nothing published behind it, and
+  the dispatch flow refuses an already-tagged version).
+
 ## [1.0.0] — not published
 
 `package.json` has declared 1.0.0 since `eac50d8` (2026-09-25).

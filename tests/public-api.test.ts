@@ -102,7 +102,7 @@ const RUNTIME_EXPORTS = [
 describe('the public API surface', () => {
   it('exports everything consumers are entitled to import', () => {
     for (const name of RUNTIME_EXPORTS) {
-      expect(api, `@flashylabs/ledger no longer exports ${name}`).toHaveProperty(name)
+      expect(api, `@flashyos/ledger no longer exports ${name}`).toHaveProperty(name)
     }
   })
 

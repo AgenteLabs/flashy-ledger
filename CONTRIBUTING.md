@@ -1,4 +1,4 @@
-# Contributing to @flashylabs/ledger
+# Contributing to @flashyos/ledger
 
 This package is part of the Flashy Labs estate, a Fortune 10-grade open source platform.
 
