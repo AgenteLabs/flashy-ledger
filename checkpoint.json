@@ -1,10 +1,10 @@
 {
   "checkpoint": "1",
   "origin": "repo/flashy-ledger",
-  "size": 100,
-  "root": "58a821ef75f11a51abb08d76f23d483929edc02672f1c8b4ad429a0ad9ec3e40",
-  "at": "2026-10-26T04:39:44.179Z",
+  "size": 101,
+  "root": "0ba527479ac6619217256883b8439fbe7a23fbb37f3a3232d7cfabd34d3452ad",
+  "at": "2026-10-26T08:40:17.433Z",
   "counts": {
-    "shipped": 100
+    "shipped": 101
   }
 }

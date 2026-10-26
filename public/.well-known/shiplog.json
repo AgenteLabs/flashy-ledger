@@ -2,8 +2,26 @@
   "shipped": "1",
   "source": "repo/flashy-ledger",
   "org": "org/flashy-ledger",
-  "generated": "2026-10-26T04:39:44.037Z",
+  "generated": "2026-10-26T08:40:17.382Z",
   "entries": [
+    {
+      "id": "ship/flashy-ledger/c00c482c86cd",
+      "repo": "repo/flashy-ledger",
+      "at": "2026-10-26T08:40:04Z",
+      "kind": "infra",
+      "title": "Rename the package to @flashyos/ledger, version 1.0.1",
+      "by": [
+        "agent/claude"
+      ],
+      "asserted": "2026-10-26",
+      "assertedBy": "agent/flashy-ledger-ci",
+      "visibility": "public",
+      "detail": "The @flashylabs scope stopped resolving when the GitHub account was renamed:\nGitHub Packages ties a scope to the account, and claimyour.gold's npm ci now\n404s on @flashylabs/ledger@0.8.0. The package publishes to the public npm\nregistry under the @flashyos organisation (publish.yml scope and the NPM_TOKEN\nnote follow). Same tree as the declared 1.0.0; 1.0.1 because v1.0.0 is already\ntagged on the remote with nothing published behind it and the dispatch flow\nrefuses an already-tagged version. RELEASES.md and CHANGELOG.md record it.\nvendor-shiplog.mjs re-vendored from flashyos (it had drifted).\n\nCo-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_01T2LtjRauY7RENs18aztY6V",
+      "refs": {
+        "commit": "c00c482c86cd7a13a47cf5b6ee8f247a5ee2f431"
+      },
+      "digest": "9139ba53e4f3341fdf46d7ad6ea704f20c405326980bb96ff0535ed3825bee6a"
+    },
     {
       "id": "ship/flashy-ledger/972d1e846377",
       "repo": "repo/flashy-ledger",
