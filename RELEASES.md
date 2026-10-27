@@ -26,7 +26,7 @@ because the real diagnosis points at a different fix:
   requires its presence.
 - **The untagged versions did not "ship untraceable" — their publishes
   failed.** `.github/workflows/publish.yml` records that every publish since the
-  token change (0.6.3, 0.8.0) died with **E401 on the PUT**. `@flashyos/ledger`
+  token change (0.6.3, 0.8.0) died with **E401 on the PUT**. `@flashylabs/ledger`
   was created by manual PAT publishes, and the package's own *Actions access
   list* — not the workflow's `permissions:` block — decides who may PUT new
   versions. `GITHUB_TOKEN` can read the package but cannot publish to it.

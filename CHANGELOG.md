@@ -10,7 +10,7 @@ versions follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ### Changed
 
 - **The package is now `@flashyos/ledger`.** The GitHub account was renamed and
-  GitHub Packages ties a scope to the account, so `@flashyos/ledger` stopped
+  GitHub Packages ties a scope to the account, so `@flashylabs/ledger` stopped
   resolving for every consumer (claimyour.gold's `npm ci` 404'd on 2026-10-26).
   Publishing is to the public npm registry under the `@flashyos` organisation.
   No API changes: this is the 1.0.0 tree below under a new name and version
@@ -22,7 +22,7 @@ versions follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 `package.json` has declared 1.0.0 since `eac50d8` (2026-09-25).
 [`RELEASES.md`](./RELEASES.md) records it as on neither registry, with the three
 publish runs of 2026-09-25 failing with `ENEEDAUTH` against GitHub Packages.
-`npm view @flashyos/ledger` answered 404 on the public registry on 2026-10-20,
+`npm view @flashylabs/ledger` answered 404 on the public registry on 2026-10-20,
 when this section was written; GitHub Packages was not queried. Nothing has been
 published since 0.8.0, so this section lists everything since it, and it
 describes the tree as `package.json` declares it today rather than any tag.
@@ -162,7 +162,7 @@ fragments, tests) is not listed; `DEVLOG.md` carries the commit history.
   repository secret in place, the publish workflow's mirror step stops
   skipping: this and every future release lands on GitHub Packages (the
   authenticated home) and on the public npm registry as
-  [`@flashyos/ledger`](https://www.npmjs.com/package/@flashyos/ledger),
+  [`@flashylabs/ledger`](https://www.npmjs.com/package/@flashylabs/ledger),
   so a stranger can take the open ledger rules with zero auth — which was
   the point of opening them.
 
@@ -366,7 +366,7 @@ a `SKILL_XP` asset at all.
 
 ### Changed
 
-- Package renamed to `@flashyos/ledger` to match the GitHub account.
+- Package renamed to `@flashylabs/ledger` to match the GitHub account.
 
 ## [0.1.1] — 2026-08-14
 

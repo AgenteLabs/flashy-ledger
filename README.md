@@ -312,7 +312,7 @@ has not been built.
 ## Publishing
 
 **Not yet on the public registry, and not under the old name.** The package is
-`@flashyos/ledger`. `@flashyos/ledger` was published to GitHub Packages up to
+`@flashyos/ledger`. `@flashylabs/ledger` was published to GitHub Packages up to
 0.8.0 and that scope stopped resolving when the GitHub account was renamed, so
 nothing is installable under it any more. `npm view @flashyos/ledger --registry
 https://registry.npmjs.org/` answered 404 on 2026-10-26; the first release
