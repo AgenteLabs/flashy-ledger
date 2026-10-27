@@ -41,7 +41,7 @@
   "repositories": [
     {
       "name": "flashy-ledger",
-      "url": "github.com/FlashyLabs/flashy-ledger",
+      "url": "github.com/AgenteLabs/flashy-ledger",
       "holds": [
         "domain",
         "ports",
