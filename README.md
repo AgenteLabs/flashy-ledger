@@ -32,13 +32,13 @@ chain — without its rules changing.
 
 ### In the Flashy ecosystem
 
-- Powered by [@flashylabs/rails](https://github.com/flashylabs/flashy-rails) (consent-gated settlement on ledger)
+- Powered by [@flashylabs/rails](https://github.com/AgenteLabs/flashy-rails) (consent-gated settlement on ledger)
 - Adopted by [ClaimYour.Gold](https://claimyour.gold) (rewards settlement)
 - Foundation for the full integration example at [flashy-network](https://flashynetwork.com)
 
 ### See also
 
-- [@flashylabs/rails](https://github.com/flashylabs/flashy-rails) — Consent layer on top of ledger
+- [@flashylabs/rails](https://github.com/AgenteLabs/flashy-rails) — Consent layer on top of ledger
 - [Flashy Finance](https://flashy.financial) — Live financial rail (built on ledger + rails)
 - [flashy.tools](https://flashy.tools) — Full package catalog with discovery
 
@@ -312,7 +312,7 @@ has not been built.
 ## Publishing
 
 **Not yet on the public registry, and not under the old name.** The package is
-`@flashyos/ledger`. `@flashylabs/ledger` was published to GitHub Packages up to
+`@flashyos/ledger`. `@flashyos/ledger` was published to GitHub Packages up to
 0.8.0 and that scope stopped resolving when the GitHub account was renamed, so
 nothing is installable under it any more. `npm view @flashyos/ledger --registry
 https://registry.npmjs.org/` answered 404 on 2026-10-26; the first release
