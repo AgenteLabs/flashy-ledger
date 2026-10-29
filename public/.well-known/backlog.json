@@ -2,6 +2,30 @@
   "backlog": "1",
   "source": "repo/flashy-ledger",
   "org": "org/flashy-ledger",
-  "generated": "2026-10-05T11:49:43.639Z",
-  "items": []
+  "generated": "2026-10-29T14:51:33.195Z",
+  "items": [
+    {
+      "id": "backlog/flashy-ledger/reconcile-version-and-target-flashynetwork",
+      "rev": 2,
+      "kind": "blocker",
+      "status": "open",
+      "title": "Reconcile the ledger’s version, then publish to @flashynetwork once named",
+      "source": {
+        "repo": "repo/flashy-ledger"
+      },
+      "assertedBy": "agent/flashy-ledger-bot",
+      "asserted": "2026-10-29",
+      "expires": "2026-11-12",
+      "visibility": "public",
+      "detail": "Three disagreeing version numbers for one package: this repo’s package.json says 1.0.0; ClaimYour.Gold depends on @flashylabs/ledger@^0.8.0 (below what’s committed, and that name 404s on public npm — only GitHub Packages has it); @flashyos/ledger 1.0.1 is live on public npm, published by hand outside this repo’s own publish.yml, which still only knows how to publish @flashylabs/ledger. @flashynetwork is now claimed on npm (zero packages). Before renaming: pick the one true version (likely 1.0.1, since that’s what’s actually live), update this repo’s package.json and ClaimYour.Gold’s dependency to agree, then point .npmrc and publish.yml at @flashynetwork/ledger directly so the next release comes from CI instead of by hand.",
+      "owner": "person/michael",
+      "capabilitiesWanted": [
+        "npm-administration"
+      ],
+      "promoted": {
+        "at": "2026-10-29",
+        "by": "person/michael"
+      }
+    }
+  ]
 }
