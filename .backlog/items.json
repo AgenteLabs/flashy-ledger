@@ -1,9 +1,9 @@
 [
  {
   "id": "backlog/flashy-ledger/reconcile-version-and-target-flashynetwork",
-  "rev": 2,
+  "rev": 3,
   "kind": "blocker",
-  "status": "open",
+  "status": "done",
   "title": "Reconcile the ledger’s version, then publish to @flashynetwork once named",
   "source": {
    "repo": "repo/flashy-ledger"
@@ -12,7 +12,7 @@
   "asserted": "2026-10-29",
   "expires": "2026-11-12",
   "visibility": "public",
-  "detail": "Three disagreeing version numbers for one package: this repo’s package.json says 1.0.0; ClaimYour.Gold depends on @flashylabs/ledger@^0.8.0 (below what’s committed, and that name 404s on public npm — only GitHub Packages has it); @flashyos/ledger 1.0.1 is live on public npm, published by hand outside this repo’s own publish.yml, which still only knows how to publish @flashylabs/ledger. @flashynetwork is now claimed on npm (zero packages). Before renaming: pick the one true version (likely 1.0.1, since that’s what’s actually live), update this repo’s package.json and ClaimYour.Gold’s dependency to agree, then point .npmrc and publish.yml at @flashynetwork/ledger directly so the next release comes from CI instead of by hand.",
+  "detail": "Correction: this item was filed on a stale, shallow clone of this repository that predated commit c00c482c (2026-10-26, \"Rename the package to @flashyos/ledger, version 1.0.1\"). That commit already did exactly what this item asked for, for a better-documented reason than I had: the GitHub org rename (FlashyLabs -> AgenteLabs) broke @flashylabs’s GitHub Packages scope resolution outright, so ClaimYour.Gold’s npm ci started 404ing on @flashylabs/ledger@0.8.0. The fix published @flashyos/ledger 1.0.1 to PUBLIC npm (not GitHub Packages) and updated this repo’s own package.json, .npmrc (removed) and publish.yml to match; ClaimYour.Gold’s dependency is confirmed updated to \"@flashyos/ledger\": \"^1.0.1\" on its own main. All three numbers this item worried about now agree. It was not an out-of-band hand-publish — it was a committed, reasoned CI change I simply hadn’t read before filing this. The one thing still genuinely open is the later move from @flashyos/ledger to @flashynetwork/ledger once that scope is actually used for something — tracked in flashyos’s own backlog item on the @flashynetwork decision, not here.",
   "owner": "person/michael",
   "capabilitiesWanted": [
    "npm-administration"
