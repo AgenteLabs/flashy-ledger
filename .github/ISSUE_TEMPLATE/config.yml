@@ -1,0 +1,8 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Security vulnerability
+    url: https://github.com/FlashyLabs/flashy-ledger/blob/main/SECURITY.md
+    about: Do not open a public issue. SECURITY.md has the private route and the response windows.
+  - name: The Strike
+    url: https://github.com/FlashyLabs/flashy-ledger/blob/main/STRIKERS.md
+    about: Recovered the README's preimage? Open an issue titled "⚡ STRIKE" containing it.

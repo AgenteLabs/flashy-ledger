@@ -13,6 +13,7 @@ import {
   type ProposedEntry,
   type TransactionalLedgerStore,
 } from '../src/index.js'
+import { WRITABLE_STORE_CLASSES, type WritableStoreClass } from './adapters.catalog.js'
 
 /**
  * The conformance suite.
@@ -48,7 +49,17 @@ const MONGO_URL = process.env.MONGO_URL
 
 interface Harness {
   name: string
+  /** The adapter class this harness exercises — checked against the catalog. */
+  ctor: WritableStoreClass
   make: () => Promise<LedgerStore>
+  /**
+   * Whether this harness runs on THIS machine. Mongo needs a database, so it
+   * skips without MONGO_URL — but it stays in the list either way, so that
+   * which classes the suite COVERS is a fact about the suite, not about whether
+   * one machine happened to set an env var. The coverage assertion reads the
+   * whole list; `describe.each` runs only the un-skipped ones.
+   */
+  skip: boolean
   cleanup?: () => Promise<void>
 }
 
@@ -94,46 +105,48 @@ async function proposeFor(
   })
 }
 
-const harnesses: Harness[] = [
-  { name: 'InMemoryLedgerStore', make: async () => new InMemoryLedgerStore() },
-]
-
 let client: MongoClient | undefined
 
-if (MONGO_URL) {
-  const connect = async () => {
-    if (!client) {
-      client = new MongoClient(MONGO_URL)
-      await client.connect()
-    }
-    return client.db(`ledger_conformance_${Date.now()}_${Math.floor(Math.random() * 1e6)}`)
+/**
+ * Connect once and hand out a fresh database per call. Only ever reached from a
+ * Mongo harness, which is skipped without MONGO_URL, so the assertion is a type
+ * narrowing rather than a new failure mode.
+ */
+const connect = async () => {
+  if (!MONGO_URL) throw new Error('connect() reached with no MONGO_URL — a Mongo harness ran while skipped')
+  if (!client) {
+    client = new MongoClient(MONGO_URL)
+    await client.connect()
   }
+  return client.db(`ledger_conformance_${Date.now()}_${Math.floor(Math.random() * 1e6)}`)
+}
 
-  harnesses.push({
+/**
+ * Every writable adapter the suite covers, declared unconditionally. The Mongo
+ * entries skip without a database; they do not leave the list, because coverage
+ * is a property of the suite and not of this machine's env. The "mapped to
+ * gold_ledger" entry is the same class addressing a collection it did not
+ * design — the field map's claim tested rather than asserted: a network that
+ * already runs a ledger puts this package's rules on its existing rows, and
+ * every guarantee here (idempotency, the chain-head race, tenant isolation,
+ * transfer atomicity) still holds, or the build fails.
+ */
+const harnesses: Harness[] = [
+  { name: 'InMemoryLedgerStore', ctor: InMemoryLedgerStore, skip: false, make: async () => new InMemoryLedgerStore() },
+  {
     name: 'MongoLedgerStore',
+    ctor: MongoLedgerStore,
+    skip: !MONGO_URL,
     make: async () => {
       const store = new MongoLedgerStore(await connect(), { client })
       await store.ensureIndexes()
       return store
     },
-  })
-
-  /**
-   * The same adapter, addressing a collection it did not design.
-   *
-   * This is the claim the field map makes, tested rather than asserted: a
-   * network that already runs a ledger can put this package's rules on its
-   * existing rows, and every guarantee in this suite still holds — the
-   * idempotency uniqueness, the chain-head race, the tenant isolation, the
-   * transfer atomicity. Different column names, different source layout,
-   * different order field, same behaviour or the build fails.
-   *
-   * Without this, "you can adopt an existing collection" is a sentence in a
-   * README, and the first person to try it finds out which of these guarantees
-   * quietly stopped applying.
-   */
-  harnesses.push({
+  },
+  {
     name: 'MongoLedgerStore (mapped to gold_ledger)',
+    ctor: MongoLedgerStore,
+    skip: !MONGO_URL,
     make: async () => {
       const store = new MongoLedgerStore(await connect(), {
         client,
@@ -143,14 +156,25 @@ if (MONGO_URL) {
       await store.ensureIndexes()
       return store
     },
-  })
-}
+  },
+]
 
 afterAll(async () => {
   await client?.close()
 })
 
-describe.each(harnesses)('$name', ({ make }) => {
+describe('the conformance population', () => {
+  it('harnesses every writable store class the catalog declares, and no stranger', () => {
+    // The pulse.yml lesson, enforced locally: the suite's population is derived
+    // from the catalog, not hand-kept beside it, so an adapter cannot be added
+    // to the catalog and silently never harnessed, nor harnessed here under a
+    // class the catalog does not know.
+    const harnessed = new Set(harnesses.map((h) => h.ctor))
+    expect(harnessed).toEqual(new Set(WRITABLE_STORE_CLASSES))
+  })
+})
+
+describe.each(harnesses.filter((h) => !h.skip))('$name', ({ make }) => {
   let store: LedgerStore
 
   beforeAll(async () => {
@@ -240,6 +264,34 @@ describe.each(harnesses)('$name', ({ make }) => {
     expect(await store.readEntries({ tenantId: 'flashy', identityId: 'id_a', assetId: GOLD.id })).toHaveLength(1)
   })
 
+  it('refuses a second append on a head another append has already moved', async () => {
+    // Port contract §4: two concurrent appends cannot both build on the same
+    // head. Two debits of the whole balance, each proposed against the same
+    // state, must settle as one debit and one refusal — never as two entries
+    // whose fold is negative. The Mongo adapter has always refused this by
+    // unique index; the reference implementation did not, so the suite was
+    // reporting a guarantee the specification itself lacked.
+    const id = 'id_head_race'
+    await store.append(await propose(store, id, 100, `${id}:fund`))
+
+    const state = await store.readState({ tenantId: 'flashy', identityId: id, assetId: GOLD.id })
+    const first = post(state, {
+      tenantId: 'flashy', identityId: id, asset: GOLD, amount: fromDecimal(-100, GOLD.decimals),
+      kind: 'SPEND', source: { type: 'test' }, idempotencyKey: `${id}:d1`, occurredAt: new Date('2026-08-13T12:00:00Z'),
+    })
+    const second = post(state, {
+      tenantId: 'flashy', identityId: id, asset: GOLD, amount: fromDecimal(-100, GOLD.decimals),
+      kind: 'SPEND', source: { type: 'test' }, idempotencyKey: `${id}:d2`, occurredAt: new Date('2026-08-13T12:00:00Z'),
+    })
+
+    await store.append(first)
+    await expect(store.append(second)).rejects.toThrow(/chain head moved/)
+
+    const after = await store.readState({ tenantId: 'flashy', identityId: id, assetId: GOLD.id })
+    expect(after.balance).toBe(0)
+    expect(await store.readEntries({ tenantId: 'flashy', identityId: id, assetId: GOLD.id })).toHaveLength(2)
+  })
+
   it('declares whether it can commit several entries together', () => {
     // Not every store can, which is why this is a capability check rather than
     // an assumption. A caller that needs transfers has to ask.
@@ -247,7 +299,7 @@ describe.each(harnesses)('$name', ({ make }) => {
   })
 })
 
-describe.each(harnesses)('$name — transfers', ({ make }) => {
+describe.each(harnesses.filter((h) => !h.skip))('$name — transfers', ({ make }) => {
   let store: TransactionalLedgerStore
 
   beforeAll(async () => {
@@ -297,6 +349,29 @@ describe.each(harnesses)('$name — transfers', ({ make }) => {
     expect((await store.readState({ tenantId: 'flashy', identityId: 'id_recipient', assetId: GOLD.id })).balance).toBe(3000)
   })
 
+  it('refuses a batch whose entries fork one chain, and lands neither', async () => {
+    // Two entries proposed against the same state inside one batch. The second
+    // must be checked against the head the first would create, not against the
+    // published head — otherwise the batch writes a fork that the single-entry
+    // path would have refused.
+    const id = 'id_batch_fork'
+    await store.append(await propose(store, id, 100, `${id}:fund`))
+    const state = await store.readState({ tenantId: 'flashy', identityId: id, assetId: GOLD.id })
+    const command = (key: string, amount: number) => ({
+      tenantId: 'flashy', identityId: id, asset: GOLD, amount: fromDecimal(amount, GOLD.decimals),
+      kind: 'SPEND' as const, source: { type: 'test' }, idempotencyKey: key, occurredAt: new Date('2026-08-13T12:00:00Z'),
+    })
+
+    // Under Mongo the fork surfaces as the chain-head index refusing the second
+    // insert inside the transaction; the message is the adapter's, the outcome
+    // — a rejection and no money moved — is the port's.
+    await expect(store.appendAll([post(state, command(`${id}:a`, -60)), post(state, command(`${id}:b`, -60))])).rejects.toThrow()
+
+    const after = await store.readState({ tenantId: 'flashy', identityId: id, assetId: GOLD.id })
+    expect(after.balance).toBe(10000)
+    expect(await store.readEntries({ tenantId: 'flashy', identityId: id, assetId: GOLD.id })).toHaveLength(1)
+  })
+
   it('treats an empty batch as a no-op rather than an error', async () => {
     expect(await store.appendAll([])).toEqual([])
   })
@@ -313,7 +388,7 @@ describe.each(harnesses)('$name — transfers', ({ make }) => {
  * Every case here fails against the pre-0.2 adapters, where `tenantId` was
  * written onto every entry and used in no query, no index and no signature.
  */
-describe.each(harnesses)('$name — tenant isolation', ({ make }) => {
+describe.each(harnesses.filter((h) => !h.skip))('$name — tenant isolation', ({ make }) => {
   let store: LedgerStore
 
   beforeEach(async () => {

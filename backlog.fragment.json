@@ -1,8 +1,9 @@
 {
+  "intent": "1",
   "backlog": "1",
   "source": "repo/flashy-ledger",
   "org": "org/flashy-ledger",
-  "generated": "2026-10-29T14:51:33.192Z",
+  "generated": "2026-10-29T15:04:08.372Z",
   "items": [
     {
       "id": "backlog/flashy-ledger/reconcile-version-and-target-flashynetwork",

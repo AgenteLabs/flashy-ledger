@@ -5,6 +5,66 @@ versions follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [1.0.1] — pending first publish
+
+### Changed
+
+- **The package is now `@flashyos/ledger`.** The GitHub account was renamed and
+  GitHub Packages ties a scope to the account, so `@flashylabs/ledger` stopped
+  resolving for every consumer (claimyour.gold's `npm ci` 404'd on 2026-10-26).
+  Publishing is to the public npm registry under the `@flashyos` organisation.
+  No API changes: this is the 1.0.0 tree below under a new name and version
+  (`v1.0.0` is already tagged on the remote with nothing published behind it, and
+  the dispatch flow refuses an already-tagged version).
+
+## [1.0.0] — not published
+
+`package.json` has declared 1.0.0 since `eac50d8` (2026-09-25).
+[`RELEASES.md`](./RELEASES.md) records it as on neither registry, with the three
+publish runs of 2026-09-25 failing with `ENEEDAUTH` against GitHub Packages.
+`npm view @flashylabs/ledger` answered 404 on the public registry on 2026-10-20,
+when this section was written; GitHub Packages was not queried. Nothing has been
+published since 0.8.0, so this section lists everything since it, and it
+describes the tree as `package.json` declares it today rather than any tag.
+
+Repository plumbing in the same period (CI hardening, the charter and record
+fragments, tests) is not listed; `DEVLOG.md` carries the commit history.
+
+### Added
+
+- **Wire shapes.** `schema/entry.json` and `schema/asset.json`, JSON Schema
+  draft 2020-12, held to the TypeScript source and to entries built by `post()`
+  by `tests/schema.test.mjs`. They live in the repository: `files` in
+  `package.json` does not include `schema/`, so the npm tarball does not carry
+  them.
+- **Two invariants** in `docs/INVARIANTS.md`: I-9, one head per chain, and I-10,
+  the domain is pure and storage-agnostic.
+- **`vendor-invariants.mjs`**, spec-kit's `invariants/1` harness vendored
+  unchanged. It runs the invariants that are about pairs of writes under every
+  schedule it knows and under seeded random sequences
+  (`tests/invariants-harness.test.ts`). Repository tooling, not an export.
+- **`SELF_TRANSFER`** joins `LedgerErrorCode`. A consumer with an exhaustive
+  `switch` over that union needs a case for it.
+
+### Fixed
+
+- **`post()` and `postTransfer()` re-assert the `Minor` brand at runtime.** The
+  brand is a compile-time promise; a JavaScript caller or a JSON body could hand
+  in `undefined`, `0.5` or `"500"`, and each would have been hashed into a
+  chain as a NaN balance, a fractional holding or a string concatenated onto a
+  number.
+- **`InMemoryLedgerStore.appendAll` guards the chain head** (I-9). It refuses a
+  candidate whose `previousHash` is not the live head of its chain, which is
+  what the Mongo adapter's unique index on
+  `(tenantId, identityId, assetId, previousHash)` already did. The in-memory
+  store is the executable specification every adapter is measured against, so
+  this was a guarantee production had and the specification did not: two appends
+  that read the same head both landed.
+- **`postTransfer` refuses a transfer from an identity to itself**
+  (`SELF_TRANSFER`). Both legs were built against one state and chained onto one
+  head: a fork, or, were it not refused, a credit of the whole amount on top of
+  an unchanged balance.
+
 ## [0.8.0] — 2026-08-27
 
 ### Added — the Merkle spec moves into the package
@@ -195,6 +255,30 @@ re-using a number that already means something else.
 - vitest and `@vitest/coverage-v8` to 4.1.11, clearing a critical advisory in
   the vitest UI server and a high path-traversal advisory in the vite it pulls.
   Dev-only; neither ships in the package.
+
+## [0.4.0] — 2026-08-20
+
+Written on 2026-10-20 from the `v0.4.0` tag (`ea0851d`), which carried no
+changelog entry, and dated by that commit. The commit's own subject says
+"0.2.0"; its `package.json` says 0.4.0. `RELEASES.md` describes 0.3.0 as the
+experience domain; the tags say otherwise: `src/domain/experience.ts` is absent
+at `v0.3.0` and present at `v0.4.0`.
+
+### Added — the experience domain
+
+- **`src/domain/experience.ts`**: `SkillKey`, `SKILL_KEYS`, `skillAssets`,
+  `skillAsset`, `skillAssetRegistry`, `skillForAssetId` and `xpIdempotencyKey`.
+  Each skill is an asset of class `SKILL_XP` at zero decimals, settled on the
+  same hash-chained books as money. The asset ids (`xp-int`, `xp-str`, `xp-ins`,
+  `xp-inf`, `xp-com`) are stable machine names rather than database ids, because
+  they appear in every entry hash.
+- **`AssetClass` gains `SKILL_XP`, and `EntryKind` gains `MIGRATION` and
+  `DECAY`.** `MIGRATION` is a one-time backfill from a pre-ledger balance, which
+  keeps the audit trail a mutation would erase. `DECAY` is explicit, posted loss
+  with a negative amount, never a mutation of what was earned.
+
+XP is status and gold is money: `0.7.0` later made `postTransfer` refuse to move
+a `SKILL_XP` asset at all.
 
 ## [0.3.0] — 2026-08-20
 

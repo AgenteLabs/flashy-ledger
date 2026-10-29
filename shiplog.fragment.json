@@ -2,8 +2,210 @@
   "shipped": "1",
   "source": "repo/flashy-ledger",
   "org": "org/flashy-ledger",
-  "generated": "2026-10-05T11:37:22.807Z",
+  "generated": "2026-10-29T04:29:11.840Z",
   "entries": [
+    {
+      "id": "ship/flashy-ledger/c00c482c86cd",
+      "repo": "repo/flashy-ledger",
+      "at": "2026-10-26T08:40:04Z",
+      "kind": "infra",
+      "title": "Rename the package to @flashyos/ledger, version 1.0.1",
+      "by": [
+        "agent/claude"
+      ],
+      "asserted": "2026-10-26",
+      "assertedBy": "agent/flashy-ledger-ci",
+      "visibility": "public",
+      "detail": "The @flashylabs scope stopped resolving when the GitHub account was renamed:\nGitHub Packages ties a scope to the account, and claimyour.gold's npm ci now\n404s on @flashylabs/ledger@0.8.0. The package publishes to the public npm\nregistry under the @flashyos organisation (publish.yml scope and the NPM_TOKEN\nnote follow). Same tree as the declared 1.0.0; 1.0.1 because v1.0.0 is already\ntagged on the remote with nothing published behind it and the dispatch flow\nrefuses an already-tagged version. RELEASES.md and CHANGELOG.md record it.\nvendor-shiplog.mjs re-vendored from flashyos (it had drifted).\n\nCo-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_01T2LtjRauY7RENs18aztY6V",
+      "refs": {
+        "commit": "c00c482c86cd7a13a47cf5b6ee8f247a5ee2f431"
+      },
+      "digest": "9139ba53e4f3341fdf46d7ad6ea704f20c405326980bb96ff0535ed3825bee6a"
+    },
+    {
+      "id": "ship/flashy-ledger/972d1e846377",
+      "repo": "repo/flashy-ledger",
+      "at": "2026-10-24T17:17:33+07:00",
+      "kind": "feature",
+      "title": "Merge pull request #20 from AgenteLabs/claude/dreamy-bell-2e5nq3",
+      "by": [
+        "person/michael"
+      ],
+      "asserted": "2026-10-24",
+      "assertedBy": "agent/flashy-ledger-ci",
+      "visibility": "public",
+      "detail": "Pin the entry hash bytes with outside vectors; schema the Merkle snapshot; tests for transfer guards, reversal and verifyChain; docs corrected",
+      "refs": {
+        "commit": "972d1e846377545c88b124769d540f8e3311409d",
+        "pr": "https://github.com/FlashyLabs/flashy-ledger/pull/20"
+      },
+      "digest": "bdfd865acc208f0b5bb7cc49c82468cb5be8db18531c906ea2ccfe52074817fe"
+    },
+    {
+      "id": "ship/flashy-ledger/7d502b4e7e7f",
+      "repo": "repo/flashy-ledger",
+      "at": "2026-10-16T08:18:47+07:00",
+      "kind": "infra",
+      "title": "bump the actions group across 1 directory with 6 updates (#17)",
+      "by": [
+        "agent/unattributed"
+      ],
+      "asserted": "2026-10-16",
+      "assertedBy": "agent/flashy-ledger-ci",
+      "visibility": "public",
+      "detail": "Bumps the actions group with 6 updates in the / directory:\n\n| Package | From | To |\n| --- | --- | --- |\n| [actions/setup-node](https://github.com/actions/setup-node) | `7.0.0` | `7.1.0` |\n| [github/codeql-action/init](https://github.com/github/codeql-action) | `3.38.1` | `4.38.3` |\n| [github/codeql-action/analyze](https://github.com/github/codeql-action) | `3.38.1` | `4.38.3` |\n| [ossf/scorecard-action](https://github.com/ossf/scorecard-action) | `2.4.4` | `2.5.0` |\n| [actions/upload-artifact](https://github.com/actions/upload-artifact) | `7.0.1` | `7.0.2` |\n| [github/codeql-action/upload-sarif](https://github.com/github/codeql-action) | `3.38.1` | `4.38.3` |\n\n\n\nUpdates `actions/setup-node` from 7.0.0 to 7.1.0\n- [Release notes](https://github.com/actions/setup-node/releases)\n- [Commits](https://github.com/actions/setup-node/compare/820762786026740c76f36085b0efc47a31fe5020...949feb2413d6458794dcd2491c4babbbce0c15c1)\n\nUpdates `github/codeql-action/init` from 3.38.1 to 4.38.3\n- [Release notes](https://github.com/github/codeql-action/releases)\n- [Changelog](https://github.com/github/codeql-action/blob/main/CHANGELOG.md)\n- [Commits](https://github.com/github/codeql-action/compare/3ea06614dafe36dec890db3446326e0d40ce53d4...24c54180a607b1449ed407dd24f251e4e9147c8d)\n\nUpdates `github/codeql-action/analyze` from 3.38.1 to 4.38.3\n- [Release notes](https://github.com/github/codeql-action/releases)\n- [Changelog](https://github.com/github/codeql-action/blob/main/CHANGELOG.md)\n- [Commits](https://github.com/github/codeql-action/compare/3ea06614dafe36dec890db3446326e0d40ce53d4...24c54180a607b1449ed407dd24f251e4e9147c8d)\n\nUpdates `ossf/scorecard-action` from 2.4.4 to 2.5.0\n- [Release notes](https://github.com/ossf/scorecard-action/releases)\n- [Changelog](https://github.com/ossf/scorecard-action/blob/main/RELEASE.md)\n- [Commits](https://github.com/ossf/scorecard-action/compare/2d1146689b8cda280b9bc96326124645441f03bc...fa7117db83c52d787ae5a89f350999701505d78e)\n\nUpdates `actions/uploa",
+      "refs": {
+        "commit": "7d502b4e7e7fb48bf885114fecfd9162e574fae3",
+        "pr": "https://github.com/FlashyLabs/flashy-ledger/pull/17"
+      },
+      "digest": "1fdefaff532fe0acdf3b17eabae63f52b9916b2ebc8c01813bc1a0c0a8e61b07"
+    },
+    {
+      "id": "ship/flashy-ledger/f956f7b7c35a",
+      "repo": "repo/flashy-ledger",
+      "at": "2026-10-14T18:27:44+07:00",
+      "kind": "feature",
+      "title": "Merge pull request #15 from FlashyLabs/claude/ceo-estate-dashboard-gmtgl8",
+      "by": [
+        "person/michael"
+      ],
+      "asserted": "2026-10-14",
+      "assertedBy": "agent/flashy-ledger-ci",
+      "visibility": "public",
+      "detail": "vendor: re-vendor drifted emitter copies from canon",
+      "refs": {
+        "commit": "f956f7b7c35a14f274f894748b275c055baad621",
+        "pr": "https://github.com/FlashyLabs/flashy-ledger/pull/15"
+      },
+      "digest": "2550afbfd2134d3953cd5ef362afc7fb29bda430d588a7af794304b5d4d673fb"
+    },
+    {
+      "id": "ship/flashy-ledger/ada08f666af5",
+      "repo": "repo/flashy-ledger",
+      "at": "2026-10-14T09:40:30+07:00",
+      "kind": "feature",
+      "title": "Merge pull request #14 from FlashyLabs/claude/flashy-ledger-architecture-audit-79az1h",
+      "by": [
+        "person/michael"
+      ],
+      "asserted": "2026-10-14",
+      "assertedBy": "agent/flashy-ledger-ci",
+      "visibility": "public",
+      "detail": "Architecture audit: enforce domain purity, derive the conformance population, document Mongo atomicity",
+      "refs": {
+        "commit": "ada08f666af584e299d09132ad49a5b717b7dc00",
+        "pr": "https://github.com/FlashyLabs/flashy-ledger/pull/14"
+      },
+      "digest": "fa0a954a056837231c68b6e3ee4ccaa9fa79fd6ab4e979131297494cd7bb84f5"
+    },
+    {
+      "id": "ship/flashy-ledger/46cd3a180473",
+      "repo": "repo/flashy-ledger",
+      "at": "2026-10-14T02:11:34Z",
+      "kind": "infra",
+      "title": "ledger: name the interleaving-audit fixes in the 1.0.0 release ledger row",
+      "by": [
+        "agent/claude"
+      ],
+      "asserted": "2026-10-14",
+      "assertedBy": "agent/flashy-ledger-ci",
+      "visibility": "public",
+      "detail": "The 1.0.0 tree carries four fixes found behind the green suite — runtime Minor\nre-assertion, the chain-head guard (I-9), and self-transfer refusal — and the\ninvariants/1 harness. The RELEASES.md row for 1.0.0 now names them, so the\npublish that finally lands on npmjs is traceable to what it fixed. Additive to\nthe notes column only; releases.test.ts stays green.\n\nCo-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_01KD3oquCLVnqZxYegHuZM6D",
+      "refs": {
+        "commit": "46cd3a180473220b29a160431d86a0bd91c374a9"
+      },
+      "digest": "e278f98473d3af58bafec0b4315f695d945c21ba24c1baf73573a403b4d0986a"
+    },
+    {
+      "id": "ship/flashy-ledger/f4a397b39edb",
+      "repo": "repo/flashy-ledger",
+      "at": "2026-10-10T06:45:51Z",
+      "kind": "other",
+      "title": "ledger: prove I-4 idempotent writes, I-5 derived balances and I-9 one head per chain under interleaving",
+      "by": [
+        "agent/claude"
+      ],
+      "asserted": "2026-10-10",
+      "assertedBy": "agent/flashy-ledger-ci",
+      "visibility": "public",
+      "detail": "Vendor spec-kit's invariants/1 harness byte-identically as\nvendor-invariants.mjs (tests/vendor-invariants-drift.test.ts pins it to canon\nand skips UNKNOWN when spec-kit is not checked out beside this repository; a\nrepository-local vendor-invariants.d.mts carries the signatures so tsc and the\ntype-checked lint resolve it, and nothing in dist changes). docs/INVARIANTS.md\nkeeps its nine invariants and numbering and gains, as further Proved by\ncitations, the interleaving and property proofs; both tests/invariants.test.ts\nand `node vendor-invariants.mjs check .` hold.\n\ntests/invariants-harness.test.ts runs two debits of a whole balance and a\ncredit against one identity under every ordered pair and every schedule (nine\npairs, forty-five schedules): exactly one debit lands, the chain verifies, the\nstored state is the fold. The same key appended twice under every schedule\nlands once and hands both callers the original. A seeded property run over\npost, postTransfer, reverse, a replay and a write against a stale head holds\nthe stored balance to the fold, the head to the last entry, every chain valid\nand no negative balance except by a reversal.\n\nThe mutation checks hand the harness the reference store as it was before I-9\nwas enforced: it is refused on exactly a||b and b||a — sequentially the second\nread sees the moved head, and a macrotask apart the first append has landed,\nwhich is the exact shape of a guarantee that held for one write at a time —\nand under random sequences it shrinks to captureState, write, postStale. A\nstore that forgot its key index is refused on all twenty replay schedules.\n\nCo-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_01KD3oquCLVnqZxYegHuZM6D",
+      "refs": {
+        "commit": "f4a397b39edbbd0d93ace2e733707b12e4f357b8"
+      },
+      "digest": "4e13a1f7115b7aebd0a92f3cd847c4edaf34792bd47580cd332bab89a9e6be68"
+    },
+    {
+      "id": "ship/flashy-ledger/4a72ebd7a4fa",
+      "repo": "repo/flashy-ledger",
+      "at": "2026-10-10T05:36:55Z",
+      "kind": "infra",
+      "title": "npm audit fix — brace-expansion and source-map-js advisories in the dev tree",
+      "by": [
+        "agent/claude"
+      ],
+      "asserted": "2026-10-10",
+      "assertedBy": "agent/flashy-ledger-ci",
+      "visibility": "public",
+      "detail": "CI's dependency audit job failed on main with two high advisories, both in\ndevelopment dependencies (typescript-eslint's brace-expansion, vite's\nsource-map-js). Lockfile regenerated with npm 10.9.8 as the manifest\ndeclares; 213 tests and lint unchanged.\n\nCo-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_01KD3oquCLVnqZxYegHuZM6D",
+      "refs": {
+        "commit": "4a72ebd7a4fab38c3d35783c57f704885c64b740"
+      },
+      "digest": "378db7b80ecf5a8af7f1d827aa2a1f78c90f2b30e2b1a34b6500a337b51980e6"
+    },
+    {
+      "id": "ship/flashy-ledger/98890d318e4f",
+      "repo": "repo/flashy-ledger",
+      "at": "2026-10-10T05:29:47Z",
+      "kind": "fix",
+      "title": "guard the chain head in the reference store, re-assert Minor at runtime, refuse self-transfers",
+      "by": [
+        "person/michael",
+        "agent/claude"
+      ],
+      "asserted": "2026-10-10",
+      "assertedBy": "agent/flashy-ledger-ci",
+      "visibility": "public",
+      "detail": "Three money-safety defects, each with a regression test.\n\nInMemoryLedgerStore.appendAll ignored the chain head: two appends that both\nread the same head both landed, the stored balance read zero and the fold over\nthe entries read minus the balance. The Mongo adapter has always refused this\nby its (tenantId, identityId, assetId, previousHash) unique index, so the\nexecutable specification was reporting a guarantee it did not itself hold.\nappendAll now computes each candidate's live head — including entries staged\nearlier in the same batch — and rejects a candidate whose previousHash is not\nthat head, with the same \"chain head moved\" error the Mongo path raises.\nRejected, not thrown: the port is a Promise.\n\npost() re-asserts the Minor brand with minor() on the one path every entry\ntakes. The brand is compile-time only; a JSON body handed in undefined (a NaN\nbalance), 0.5 (a fractional holding) and \"500\" (a string concatenated onto the\nbalance), and each was hashed into a chain. postTransfer asserts it too,\nbefore either leg is posted.\n\npostTransfer refuses from.identityId === to.identityId (SELF_TRANSFER). Both\nlegs were posted against one state and chained onto one head: a fork, and a\nholder credited the sum of both legs (100 → 150 on a 50 transfer).\n\nhashEntry's fields and order are unchanged. docs/INVARIANTS.md gains I-9\n(one head per chain) and I-2 cites the runtime re-assertion; both are run\nagainst every adapter by the conformance suite.\n\nCo-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_01KD3oquCLVnqZxYegHuZM6D\nSigned-off-by: Michael Gord <michael@gda.capital>",
+      "refs": {
+        "commit": "98890d318e4f4119146a358a5d5bc31cc092de03"
+      },
+      "digest": "1843fe9526d5541f534c2a7bb36e5ac8f04ce78702b169752fdede05c1c06db3"
+    },
+    {
+      "id": "ship/flashy-ledger/7b254be43e41",
+      "repo": "repo/flashy-ledger",
+      "at": "2026-09-28T22:24:52Z",
+      "kind": "fix",
+      "title": "publish to npmjs, wire-shape schemas, real CLAUDE.md, standalone tests in check",
+      "by": [
+        "agent/claude"
+      ],
+      "asserted": "2026-10-10",
+      "assertedBy": "agent/flashy-ledger-ci",
+      "visibility": "public",
+      "detail": "publishConfig pointed at GitHub Packages, which is restricted to the org\nand cost four releases to a mirror step nobody could consume. Now npmjs\npublic; publish.yml refuses without NPM_TOKEN and the mirror is gone.\n\nschema/entry.json and schema/asset.json describe the ledger's wire\nshapes as JSON Schema 2020-12; tests/schema.test.mjs builds fixtures\nthrough post()/postTransfer() from dist/ so the schema is checked against\nwhat the code emits, not a hand-typed sample. test:standalone (node\n--test, nothing installed) is wired into `check` and CI.\n\nREADME gains Quick start, Wire shapes, Publishing and Status (honest: not\non npmjs as of 2026-09-28). CLAUDE.md is rewritten from the placeholder.\nAdded RELEASES row for 1.0.0, CODE_OF_CONDUCT, issue templates.\n\nPre-existing reds fixed in passing: releases.test.ts had no 1.0.0 row,\nlint did not cover .mjs, cross-linking.test.mjs read a link label as its\nURL. check: typecheck, lint, vitest 208/208 with coverage gates, node\n16/16.\n\nCo-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_01KD3oquCLVnqZxYegHuZM6D",
+      "refs": {
+        "commit": "7b254be43e41df629bda1028568ab77f667f9de8"
+      },
+      "digest": "cbe44ad3947a817aa72c2e494240f397645944328d935d510b1a67bcd05b4147"
+    },
+    {
+      "id": "ship/flashy-ledger/eac50d8d976a",
+      "repo": "repo/flashy-ledger",
+      "at": "2026-09-25T17:56:29Z",
+      "kind": "infra",
+      "title": "Bump to 1.0.0 for npm publication",
+      "by": [
+        "agent/claude"
+      ],
+      "asserted": "2026-10-10",
+      "assertedBy": "agent/flashy-ledger-ci",
+      "visibility": "public",
+      "refs": {
+        "commit": "eac50d8d976a348a91c3c0c4a8fbf3870536f780"
+      },
+      "digest": "67af0cc2108f6614dda6255619f12c8c18be886476de8b50aebec9a281649c60"
+    },
     {
       "id": "ship/flashy-ledger/cf4d9bacae52",
       "repo": "repo/flashy-ledger",
@@ -20,6 +222,24 @@
         "commit": "cf4d9bacae52b5b59c99d4b689a1faced6322286"
       },
       "digest": "0c005303f7662f9f4578ef4f493083918acf9007ceccdd258081cd3259954dc1"
+    },
+    {
+      "id": "ship/flashy-ledger/da2bf20f80d3",
+      "repo": "repo/flashy-ledger",
+      "at": "2026-09-24T15:06:29Z",
+      "kind": "feature",
+      "title": "Phase 1: Add cross-linking, CONTRIBUTING.md, tests",
+      "by": [
+        "agent/claude"
+      ],
+      "asserted": "2026-10-10",
+      "assertedBy": "agent/flashy-ledger-ci",
+      "visibility": "public",
+      "detail": "- Added 'When to use alone' and 'In the Flashy ecosystem' sections to README\n- Added 'See also' links with cross-references to related packages\n- Created CONTRIBUTING.md with estate rules and development guidelines\n- Added cross-linking validation test to ensure README links are correct\n- All sections link back to flashy.tools for discovery\n\nCo-Authored-By: Claude Haiku 4.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_01KD3oquCLVnqZxYegHuZM6D",
+      "refs": {
+        "commit": "da2bf20f80d35ff611f24bf9918971988b0922dc"
+      },
+      "digest": "067989e05cba134ca0fc4abfabf9b67d460f0d42708e3536c8d7a7d48f6199c9"
     },
     {
       "id": "ship/flashy-ledger/2ece35756fcc",

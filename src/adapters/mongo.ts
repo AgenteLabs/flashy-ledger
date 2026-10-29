@@ -39,10 +39,30 @@ import {
  *
  * ON AMOUNTS
  * ──────────
- * Minor units are integers and can exceed 2^53 over a long-lived ledger, so
- * they are stored as BSON `Long` via the driver's `Int64`-ish handling and
- * converted at this boundary only. The domain never sees a Mongo type and this
- * file never does arithmetic.
+ * Minor units are whole numbers. They are written as decimal strings by
+ * default, and as numbers when the field map says `amountEncoding: 'number'`
+ * (a collection being adopted whose readers already expect a number); see
+ * `encodeAmount`.
+ *
+ * Reading is looser than writing. A stored amount goes through `Number()` in
+ * `decodeAmount` and then through `minor()`, so what is accepted is whatever
+ * `Number()` turns into a safe integer, not only what this adapter wrote:
+ *
+ *   - A number or numeric string whose `Number()` value is a whole number no
+ *     larger in magnitude than `Number.MAX_SAFE_INTEGER` is accepted. That
+ *     includes `' 5 '` (read as 5), `'1e3'` (1000) and `'0x10'` (16).
+ *   - `null`, `''` and a whitespace-only string are accepted and read as 0.
+ *   - `PrecisionError` is thrown for a stored value that `Number()` parses to a
+ *     non-whole double (`12.5`), to NaN or an infinity, to a whole number
+ *     beyond `Number.MAX_SAFE_INTEGER` (`'9007199254740993'`), and for a field
+ *     that is absent (`undefined`).
+ *   - A fraction too small for a double to hold is not caught: `Number()` has
+ *     already rounded `'12.0000000000000001'` to exactly 12 by the time the
+ *     whole-number check runs, so it is read as 12 rather than refused.
+ *
+ * The string encoding does not widen the range, which is the domain's: a value
+ * beyond `Number.MAX_SAFE_INTEGER` cannot be read back by this adapter. The
+ * domain never sees a Mongo type and this file never does arithmetic.
  */
 
 /** The document shape. Deliberately explicit rather than inferred from Entry. */
