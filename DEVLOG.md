@@ -3,6 +3,10 @@
 _This is the changelog. "Devlog" and "changelog" name the same document here —_
 _see `devlog/1` in `packages/shiplog/SPEC.md` if that reads like it needs reconciling._
 
+## 2026-10-29
+
+- Merge pull request #24 from AgenteLabs/backlog-flashynetwork-item ([`73052e8ab486`](https://github.com/FlashyLabs/flashy-ledger/commit/73052e8ab486827a063b4ab34610c7be1bfda11f))
+
 ## 2026-10-24
 
 - Merge pull request #20 from AgenteLabs/claude/dreamy-bell-2e5nq3 ([`972d1e846377`](https://github.com/FlashyLabs/flashy-ledger/commit/972d1e846377545c88b124769d540f8e3311409d))

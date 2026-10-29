@@ -2,8 +2,27 @@
   "shipped": "1",
   "source": "repo/flashy-ledger",
   "org": "org/flashy-ledger",
-  "generated": "2026-10-29T04:29:11.840Z",
+  "generated": "2026-10-29T15:15:24.362Z",
   "entries": [
+    {
+      "id": "ship/flashy-ledger/73052e8ab486",
+      "repo": "repo/flashy-ledger",
+      "at": "2026-10-29T22:15:10+07:00",
+      "kind": "feature",
+      "title": "Merge pull request #24 from AgenteLabs/backlog-flashynetwork-item",
+      "by": [
+        "person/michael"
+      ],
+      "asserted": "2026-10-29",
+      "assertedBy": "agent/flashy-ledger-ci",
+      "visibility": "public",
+      "detail": "backlog: file the @flashynetwork version-reconciliation blocker",
+      "refs": {
+        "commit": "73052e8ab486827a063b4ab34610c7be1bfda11f",
+        "pr": "https://github.com/FlashyLabs/flashy-ledger/pull/24"
+      },
+      "digest": "88f48090451644abc5d6f366c367883f61d7cd641a421e0a90c5fec92ce580ec"
+    },
     {
       "id": "ship/flashy-ledger/c00c482c86cd",
       "repo": "repo/flashy-ledger",
