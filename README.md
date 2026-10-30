@@ -44,7 +44,7 @@ chain — without its rules changing.
 
 ## Quick start
 
-**Consumer** — once published (it is not yet; see **Publishing**, below):
+**Consumer** — published; see **Publishing**, below for how that is verified:
 
 ```bash
 npm install @flashyos/ledger
@@ -311,28 +311,56 @@ has not been built.
 
 ## Publishing
 
-**Not yet on the public registry, and not under the old name.** The package is
-`@flashyos/ledger`. `@flashylabs/ledger` was published to GitHub Packages up to
-0.8.0 and that scope stopped resolving when the GitHub account was renamed, so
-nothing is installable under it any more. `npm view @flashyos/ledger --registry
-https://registry.npmjs.org/` answered 404 on 2026-10-26; the first release
-under the new name is 1.0.1 (1.0.0 was tagged but never published, see
-[`RELEASES.md`](./RELEASES.md)). Versions up to 0.8.0 stay on GitHub Packages,
-which needs a token even to read a public package — so that is no longer the
-target.
+**Published, under the new name.** `@flashyos/ledger@1.0.1` landed on the
+public registry at `registry.npmjs.org` on **2026-10-26T12:51:10.512Z**.
+`@flashylabs/ledger` was published to GitHub Packages up to 0.8.0 and that
+scope stopped resolving when the GitHub account was renamed, so nothing is
+installable under it any more; versions up to 0.8.0 stay on GitHub Packages,
+which needs a token even to read a public package, and nothing publishes
+there any more.
+
+Measured directly, read-only, on 2026-10-30 (no publish was attempted — this
+session holds no `NPM_TOKEN` and none was needed):
+
+- `curl https://registry.npmjs.org/@flashyos/ledger` (not through any local
+  npm config — the raw registry endpoint) returns `"1.0.1"` as `dist-tags.latest`
+  and the version's own `gitHead` is `4a0d3a648f2c1cae79b8ed841f9dde77f2404872`
+  — the exact commit the `v1.0.1` tag points at, which is on this repository's
+  shipping ref (`main`).
+- Rebuilding that exact commit in a clean checkout (`npm ci && npm pack
+  --dry-run`) reproduces the published tarball **byte-for-byte**: shasum
+  `af6c34c7ed895ae8dc2876804adab30943d7cff1`, the same sha512 integrity, the
+  same 89-file, 325.4 kB unpacked payload the registry reports.
+
+`node scripts/check-publish-status.mjs [--json]` runs this verification (the
+registry fetch, plus the local-rebuild comparison when `dist/` is present)
+and reports one of four `status` values — `published-current` (the version
+`package.json` declares is on the registry), `published-stale` (`package.json`
+has moved past what the registry actually has — the "prepared but not
+published" shape the roadmap anticipated), `unreachable` (the network could
+not be asked — never treated as "not published"; an unread result is not a
+negative one), or `not-found` (a genuine 404) — alongside the registry's
+`gitHead` and publish time, whether that `gitHead` matches the local tag, and
+the tarball comparison. `tests/publish-status.test.mjs` pins the
+classification logic against fixtures, offline; the live network call only
+happens when the script is actually run, never inside the test.
 
 `publishConfig` points at `https://registry.npmjs.org/` with `access:
 public`, and `.github/workflows/publish.yml` publishes there on a pushed
 `vX.Y.Z` tag matching `package.json`, or on a manual dispatch that tags after
-the publish lands. It needs exactly one repository secret:
+the publish lands. Releasing a **further** version still needs exactly one
+repository secret:
 
 | Secret | What | Where it comes from |
 |---|---|---|
 | `NPM_TOKEN` | An npm access token with publish rights on the `@flashyos` scope (granular token: read and write on the package or scope, with 2FA bypass for automation) | npmjs.com → Access Tokens; store it only as a GitHub Actions secret, never in a file |
 
 Without it the workflow refuses to run — it does not fall back to another
-registry. When the first publish lands, replace the first sentence of this
-section with the version and date, and add the row to `RELEASES.md`.
+registry. This is the only remaining gate on a 1.0.2+ release; nothing about
+the package's own preparation (exports map, `files` allowlist, dual
+ESM/CJS build) blocks it — see `tests/package-surface.test.mjs`. When a
+further publish lands, update the measured-on date above and the row in
+`RELEASES.md`.
 
 ## The invariants
 

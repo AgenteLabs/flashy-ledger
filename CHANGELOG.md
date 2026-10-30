@@ -5,7 +5,7 @@ versions follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
-## [1.0.1] — pending first publish
+## [1.0.1] — 2026-10-26
 
 ### Changed
 
@@ -15,7 +15,10 @@ versions follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   Publishing is to the public npm registry under the `@flashyos` organisation.
   No API changes: this is the 1.0.0 tree below under a new name and version
   (`v1.0.0` is already tagged on the remote with nothing published behind it, and
-  the dispatch flow refuses an already-tagged version).
+  the dispatch flow refuses an already-tagged version). **Landed**:
+  `registry.npmjs.org` shows `1.0.1` published 2026-10-26T12:51:10.512Z,
+  `gitHead 4a0d3a6`, matching the tagged commit exactly — see RELEASES.md and
+  README, "Publishing".
 
 ## [1.0.0] — not published
 

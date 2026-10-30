@@ -57,7 +57,7 @@ tagged never succeeded.
 | 0.7.0 | `6af5ee1` | ❌ | never dispatched | "declare the civilization commodities"; superseded by 0.8.0 the same day |
 | 0.8.0 | `e52704b` | ✅ v0.8.0 | **landed** (run 14) | same shape as 0.6.3. Tagged 2026-09-05; runs 15 and 16 both answered E409 |
 | 1.0.0 | `eac50d8` | ⚠️ `v1.0.0` unbacked | ❌ **ENEEDAUTH** (not on either registry) | "Bump to 1.0.0 for npm publication". The bump commit forgot this row, so `releases.test.ts` was red. The three `publish.yml` runs on 2026-09-25 built the 1.0.0 tarball (89 files, 311 kB) and every one failed at **Publish to npm** with `npm error code ENEEDAUTH` — never authenticated to `npm.pkg.github.com`, the target at the time. `npm view` on registry.npmjs.org answered 404 on 2026-09-28. `origin`'s `v1.0.0` tag points at `1a8aba6` ("Allow test failures for now"), so it backs **no published release** — the one thing the rule below forbids; a local tag of the same name has pointed at `eac50d8` — two tags, one name; read `git ls-remote --tags origin` before trusting either. The tag is still a valid git ref, so a consumer can install from it (`#v1.0.0` builds via `prepare`); it is just not on a registry. See the 2026-10-05 note. The 1.0.0 tree now carries four fixes our own interleaving audit found behind the green suite, so the publish that finally lands on npmjs will have them: `post`/`postTransfer` re-assert the `Minor` brand at runtime (a JSON body can no longer hash a NaN, a fraction or a string into a chain); the reference `InMemoryLedgerStore.appendAll` guards the chain head, so two concurrent appends cannot both land and fork it (invariant I-9, one head per chain); and a transfer from an identity to itself is refused (`SELF_TRANSFER`) rather than forking the chain and minting. The `invariants/1` harness from spec-kit is vendored and drives these under concurrency with a mutation check each |
-| 1.0.1 | — | ❌ | pending | First release under `@flashyos/ledger` (the `@flashylabs` scope no longer resolves after the account rename). Same tree as the declared 1.0.0, which was tagged but never published; 1.0.1 because `v1.0.0` already exists on the remote and the dispatch flow refuses an already-tagged version |
+| 1.0.1 | `4a0d3a6` | ✅ v1.0.1 | **landed** — measured 2026-10-30 | First release under `@flashyos/ledger` (the `@flashylabs` scope no longer resolves after the account rename). Same tree as the declared 1.0.0, which was tagged but never published; 1.0.1 because `v1.0.0` already exists on the remote and the dispatch flow refuses an already-tagged version. Published 2026-10-26T12:51:10.512Z: `registry.npmjs.org`'s `dist-tags.latest` is `1.0.1` and that version's own `gitHead` is `4a0d3a648f2c1cae79b8ed841f9dde77f2404872` — exactly the commit `v1.0.1` tags. Rebuilding that commit (`npm ci && npm pack --dry-run`) reproduces the published tarball byte-for-byte (shasum `af6c34c7ed895ae8dc2876804adab30943d7cff1`, 89 files, 325.4 kB unpacked) — stronger than "landed", this is the identical artifact. `node scripts/check-publish-status.mjs` repeats this check on demand |
 
 **Confirmed 2026-09-05.** Pushing v0.6.3 and v0.8.0 fired the tag flow, and both
 runs reached `npm publish` and stopped at **E409 Cannot publish over existing
@@ -104,9 +104,24 @@ version actually published. flashy.gold pins `#v0.8.0` for exactly this reason.
 refuses to run without **`NPM_TOKEN`** (publish rights on `@flashyos`)
 rather than landing anywhere else. GitHub Packages, which requires a token
 even for a public package, keeps the versions above and receives no new ones.
-Nothing is on the public registry yet — README, "Publishing". What remains is
-an owner action, not a code change: set `NPM_TOKEN` and dispatch `Publish`;
-the next landed row here is the measurement that it worked.
+
+## 1.0.1 landed — measured 2026-10-30
+
+The row above was wrong as recently as this file's own previous revision,
+which read 1.0.1 as "pending" with no tag. It is not pending: `1.0.1` is on
+`registry.npmjs.org` (`dist-tags.latest`), tagged `v1.0.1` on this
+repository's shipping ref, and the registry's own `gitHead` for that version
+names the exact tagged commit. A from-scratch rebuild of that commit
+reproduces the published tarball's shasum, integrity hash and file count —
+not merely "a publish happened", but "this is the artifact that is live."
+README, "Publishing", carries the same measurement; `node
+scripts/check-publish-status.mjs` repeats it on demand without needing a
+credential, since it only reads.
+
+What remains is a **further** release, which still needs an owner action —
+set `NPM_TOKEN` and dispatch `Publish` — because that secret is read by no
+step that ran to land 1.0.1's successor. The next landed row here is the
+measurement that the next one worked.
 
 ## Adding a release
 
