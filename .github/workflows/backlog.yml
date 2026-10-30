@@ -114,10 +114,10 @@ jobs:
           TOKEN: ${{ secrets.ESTATE_DISPATCH_TOKEN }}
         run: |
           if [ -z "$TOKEN" ]; then
-            echo "::warning title=Fan-out is not configured::The record changed and the estate graph was not told. The daily merge still finds it, so this is a delay of up to 24 hours rather than a loss. Set ESTATE_DISPATCH_TOKEN (an org secret with contents:write on FlashyLabs/flashyos) to close it."
+            echo "::warning title=Fan-out is not configured::The record changed and the estate graph was not told. The daily merge still finds it, so this is a delay of up to 24 hours rather than a loss. Set ESTATE_DISPATCH_TOKEN (an org secret with contents:write on AgenteLabs/flashyos) to close it."
             exit 0
           fi
-          code=$(curl -sS -o /tmp/dispatch.out -w '%{http_code}' -X POST -H 'Accept: application/vnd.github+json' -H "Authorization: Bearer $TOKEN" https://api.github.com/repos/FlashyLabs/flashyos/dispatches -d '{"event_type":"estate-fragment-updated"}')
+          code=$(curl -sS -o /tmp/dispatch.out -w '%{http_code}' -X POST -H 'Accept: application/vnd.github+json' -H "Authorization: Bearer $TOKEN" https://api.github.com/repos/AgenteLabs/flashyos/dispatches -d '{"event_type":"estate-fragment-updated"}')
           if [ "$code" != "204" ]; then
             echo "::error title=Fan-out failed::flashyos returned $code to the dispatch. The daily merge is the fallback."
             cat /tmp/dispatch.out
