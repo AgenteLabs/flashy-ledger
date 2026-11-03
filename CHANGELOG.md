@@ -5,6 +5,38 @@ versions follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [2.0.0] — 2026-11-03
+
+### Changed
+
+- **BREAKING: the package is now `@flashynetwork/ledger`.** Part of the
+  estate-wide `@flashyos/*` → `@flashynetwork/*` npm scope rename. No API
+  changes — this is the 1.0.1 tree under a new name and a major version,
+  bumped because changing a package's published name is exactly the kind of
+  change semver's major boundary exists to signal, not because any behaviour
+  changed. `package.json`'s `name` field and `.github/workflows/publish.yml`'s
+  `setup-node` scope configuration (`scope: "@flashynetwork"`) were updated to
+  match; no source file in this package ever imported `@flashyos/*` as a
+  dependency, so there was nothing else to rename.
+- **`@flashyos/ledger@1.0.1` is retired, not retracted.** npm publishes are
+  immutable: `@flashyos/ledger@1.0.1` stays live on `registry.npmjs.org`
+  forever, for flashy-rails, ClaimYour.Gold, or any other consumer still
+  pinned to it. It simply receives no further releases — `2.0.0` and
+  everything after it publishes only as `@flashynetwork/ledger`.
+- **Not yet published.** This commit renames the package locally; it does
+  not publish it. The `@flashynetwork` scope does not exist on the public npm
+  registry yet, and this repository holds no `NPM_TOKEN` scoped to it (nor
+  any publish credential at all) in this environment. Until a human with
+  registry access creates the `@flashynetwork` org and either pushes the
+  `v2.0.0` tag or runs the `Publish` workflow by manual dispatch,
+  `npm install @flashynetwork/ledger` resolves nowhere, and
+  `node scripts/check-publish-status.mjs` against this `package.json` will
+  honestly report `not-found` — that is the correct reading of an unpublished
+  package, not a regression in the script. The further follow-up step, also
+  blocked on registry credentials this environment does not have, is
+  `npm deprecate @flashyos/ledger "moved to @flashynetwork/ledger"`, pointing
+  the old name's consumers at the new one. See README, "Publishing".
+
 ## [1.0.1] — 2026-10-26
 
 ### Changed

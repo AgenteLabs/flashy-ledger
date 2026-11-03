@@ -311,16 +311,38 @@ has not been built.
 
 ## Publishing
 
-**Published, under the new name.** `@flashyos/ledger@1.0.1` landed on the
-public registry at `registry.npmjs.org` on **2026-10-26T12:51:10.512Z**.
-`@flashylabs/ledger` was published to GitHub Packages up to 0.8.0 and that
-scope stopped resolving when the GitHub account was renamed, so nothing is
-installable under it any more; versions up to 0.8.0 stay on GitHub Packages,
-which needs a token even to read a public package, and nothing publishes
-there any more.
+**Renamed to `@flashynetwork/ledger`, as of `2.0.0` — not yet published.**
+This is the estate-wide `@flashyos/*` → `@flashynetwork/*` npm scope rename,
+applied here: `package.json`'s `name` field and the `setup-node` scope in
+`.github/workflows/publish.yml` now both say `@flashynetwork`. Nothing about
+the package's behaviour changed; the major version bumped anyway, because a
+published package's name is part of its contract and changing it is exactly
+what a major bump exists to signal. No source file in this package ever
+imported `@flashyos/*` as a dependency, so this rename touches only the
+package's own identity, not its code.
 
-Measured directly, read-only, on 2026-10-30 (no publish was attempted — this
-session holds no `NPM_TOKEN` and none was needed):
+**This commit renames the package locally. It does not publish it.** The
+`@flashynetwork` scope does not exist on the public npm registry yet, and
+this repository holds no `NPM_TOKEN` credentialed for it. Until a human with
+registry access creates the `@flashynetwork` org on npmjs.com and either
+pushes the `v2.0.0` tag or runs `Publish` by manual dispatch,
+`npm install @flashynetwork/ledger` resolves nowhere, and running
+`node scripts/check-publish-status.mjs` against this `package.json` will
+honestly report `not-found` — that is the correct reading of a renamed-but-
+unpublished package, not a defect in the script (see below). The companion
+step, also blocked on registry credentials, is
+`npm deprecate @flashyos/ledger "moved to @flashynetwork/ledger"`, pointing
+consumers of the old name at the new one.
+
+**`@flashyos/ledger@1.0.1` is retired, not retracted, and still works.** npm
+publishes are immutable — nothing can unpublish or edit a landed version — so
+`@flashyos/ledger@1.0.1` stays live on `registry.npmjs.org` forever, for
+flashy-rails, ClaimYour.Gold, or any other consumer still pinned to it. It
+simply receives no further releases: `2.0.0` and everything after it
+publishes only under the new name, once a human can actually run that
+publish. Measured directly, read-only, on 2026-10-30, before the rename (no
+publish was attempted — that session held no `NPM_TOKEN` and none was
+needed):
 
 - `curl https://registry.npmjs.org/@flashyos/ledger` (not through any local
   npm config — the raw registry endpoint) returns `"1.0.1"` as `dist-tags.latest`
@@ -332,35 +354,46 @@ session holds no `NPM_TOKEN` and none was needed):
   `af6c34c7ed895ae8dc2876804adab30943d7cff1`, the same sha512 integrity, the
   same 89-file, 325.4 kB unpacked payload the registry reports.
 
-`node scripts/check-publish-status.mjs [--json]` runs this verification (the
-registry fetch, plus the local-rebuild comparison when `dist/` is present)
-and reports one of four `status` values — `published-current` (the version
-`package.json` declares is on the registry), `published-stale` (`package.json`
-has moved past what the registry actually has — the "prepared but not
-published" shape the roadmap anticipated), `unreachable` (the network could
-not be asked — never treated as "not published"; an unread result is not a
-negative one), or `not-found` (a genuine 404) — alongside the registry's
-`gitHead` and publish time, whether that `gitHead` matches the local tag, and
-the tarball comparison. `tests/publish-status.test.mjs` pins the
-classification logic against fixtures, offline; the live network call only
-happens when the script is actually run, never inside the test.
+`@flashylabs/ledger` was published to GitHub Packages up to 0.8.0 and that
+scope stopped resolving when the GitHub account was renamed, so nothing is
+installable under it any more; versions up to 0.8.0 stay on GitHub Packages,
+which needs a token even to read a public package, and nothing publishes
+there any more.
+
+`node scripts/check-publish-status.mjs [--json]` runs the registry check
+(plus the local-rebuild comparison when `dist/` is present) against whatever
+name and version `package.json` currently declares, and reports one of four
+`status` values — `published-current` (the version `package.json` declares
+is on the registry), `published-stale` (`package.json` has moved past what
+the registry actually has — the "prepared but not published" shape the
+roadmap anticipated), `unreachable` (the network could not be asked — never
+treated as "not published"; an unread result is not a negative one), or
+`not-found` (a genuine 404 — the honest status for `@flashynetwork/ledger`
+today) — alongside the registry's `gitHead` and publish time, whether that
+`gitHead` matches the local tag, and the tarball comparison.
+`tests/publish-status.test.mjs` pins the classification logic against
+fixtures, offline; the live network call only happens when the script is
+actually run, never inside the test.
 
 `publishConfig` points at `https://registry.npmjs.org/` with `access:
 public`, and `.github/workflows/publish.yml` publishes there on a pushed
 `vX.Y.Z` tag matching `package.json`, or on a manual dispatch that tags after
-the publish lands. Releasing a **further** version still needs exactly one
-repository secret:
+the publish lands. Releasing **`2.0.0`** — the first release under the new
+name — needs exactly one repository secret:
 
 | Secret | What | Where it comes from |
 |---|---|---|
-| `NPM_TOKEN` | An npm access token with publish rights on the `@flashyos` scope (granular token: read and write on the package or scope, with 2FA bypass for automation) | npmjs.com → Access Tokens; store it only as a GitHub Actions secret, never in a file |
+| `NPM_TOKEN` | An npm access token with publish rights on the `@flashynetwork` scope (granular token: read and write on the package or scope, with 2FA bypass for automation) | npmjs.com → Access Tokens, once the `@flashynetwork` org exists; store it only as a GitHub Actions secret, never in a file |
 
 Without it the workflow refuses to run — it does not fall back to another
-registry. This is the only remaining gate on a 1.0.2+ release; nothing about
-the package's own preparation (exports map, `files` allowlist, dual
-ESM/CJS build) blocks it — see `tests/package-surface.test.mjs`. When a
-further publish lands, update the measured-on date above and the row in
-`RELEASES.md`.
+registry, and (since the `setup-node` scope now reads `@flashynetwork`) it
+can no longer fall back to the old `@flashyos` scope either. This is the only
+remaining gate on the `2.0.0` release; nothing about the package's own
+preparation (exports map, `files` allowlist, dual ESM/CJS build) blocks it —
+see `tests/package-surface.test.mjs`. When the first publish under the new
+name lands: update the measured-on date above, the `2.0.0` row in
+`RELEASES.md`, and run `npm deprecate @flashyos/ledger "moved to
+@flashynetwork/ledger"` with a token that still has rights on the old scope.
 
 ## The invariants
 
