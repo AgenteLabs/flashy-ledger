@@ -3,6 +3,10 @@
 _This is the changelog. "Devlog" and "changelog" name the same document here —_
 _see `devlog/1` in `packages/shiplog/SPEC.md` if that reads like it needs reconciling._
 
+## 2026-11-03
+
+- Document why settlement/1 does not reuse this spec's canonical form (#26) ([`31d7be84ea62`](https://github.com/FlashyLabs/flashy-ledger/commit/31d7be84ea62b516699707e9868452e432915e2d))
+
 ## 2026-10-29
 
 - Merge pull request #24 from AgenteLabs/backlog-flashynetwork-item ([`73052e8ab486`](https://github.com/FlashyLabs/flashy-ledger/commit/73052e8ab486827a063b4ab34610c7be1bfda11f))

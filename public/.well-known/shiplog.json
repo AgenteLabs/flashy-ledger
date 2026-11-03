@@ -2,8 +2,28 @@
   "shipped": "1",
   "source": "repo/flashy-ledger",
   "org": "org/flashy-ledger",
-  "generated": "2026-11-03T04:26:15.704Z",
+  "generated": "2026-11-03T15:24:22.407Z",
   "entries": [
+    {
+      "id": "ship/flashy-ledger/31d7be84ea62",
+      "repo": "repo/flashy-ledger",
+      "at": "2026-11-03T22:24:07+07:00",
+      "kind": "docs",
+      "title": "Document why settlement/1 does not reuse this spec's canonical form (#26)",
+      "by": [
+        "person/michael",
+        "agent/claude"
+      ],
+      "asserted": "2026-11-03",
+      "assertedBy": "agent/flashy-ledger-ci",
+      "visibility": "public",
+      "detail": "Phase 2 of the estate's one-tree roadmap found that a single ledger entry\nnow has two independent proof mechanisms over the same row: this spec's\ncanonical() (consumed by ClaimYour.Gold's day-commitment) and\nflashynetwork.com's settlement/1 leaf. Checked whether to unify them onto\none hash and decided not to: the two pre-images already diverge (encoding\nand timestamp precision), and flashynetwork's committed transparency log\nholds 12,000+ leaves sealed under its own pre-image that changing this spec\nto match would retroactively break. The two also answer different\nquestions (a day-batched set vs. a running per-entry log) for the same\nreason Flashy Rails' own settlement log does not reuse this sorted-set\nconstruction. No code changes here — this records that the alternative was\nexamined, not skipped, and names the cross-reference the two consuming\nrepositories ship instead.\n\n\nClaude-Session: https://claude.ai/code/session_01Cmdsrm66fKc3D9dNwqPL64\n\nCo-authored-by: Claude <noreply@anthropic.com>",
+      "refs": {
+        "commit": "31d7be84ea62b516699707e9868452e432915e2d",
+        "pr": "https://github.com/FlashyLabs/flashy-ledger/pull/26"
+      },
+      "digest": "029fdee0742622e77e1be807d17b0dd5456cbc2384974017b9db28d3e5077d68"
+    },
     {
       "id": "ship/flashy-ledger/73052e8ab486",
       "repo": "repo/flashy-ledger",

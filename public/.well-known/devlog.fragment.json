@@ -2,8 +2,15 @@
   "devlog": "1",
   "source": "repo/flashy-ledger",
   "org": "org/flashy-ledger",
-  "generated": "2026-11-03T04:26:15.707Z",
+  "generated": "2026-11-03T15:24:22.410Z",
   "entries": [
+    {
+      "id": "devlog/flashy-ledger/31d7be84ea62",
+      "at": "2026-11-03T22:24:07+07:00",
+      "summary": "Document why settlement/1 does not reuse this spec's canonical form (#26)",
+      "commitSha": "31d7be84ea62b516699707e9868452e432915e2d",
+      "ref": "https://github.com/FlashyLabs/flashy-ledger/commit/31d7be84ea62b516699707e9868452e432915e2d"
+    },
     {
       "id": "devlog/flashy-ledger/73052e8ab486",
       "at": "2026-10-29T22:15:10+07:00",
