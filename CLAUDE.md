@@ -151,6 +151,61 @@ byte.
 - `tests/devlog.test.ts`: `DEVLOG.md` and the served fragment are derived by
   the vendored emitter, never hand-written.
 
+## This spec's canonical form is NOT shared with flashynetwork's settlement/1 leaf, by decision
+
+Checked 2026-11-03, as part of the estate's "one unified transparency tree"
+roadmap (phase 2; phase 1 folded Flashy Rails' own log in as `railhead/1`,
+documented in flashynetwork's CLAUDE.md). A single Flashy Gold ledger entry
+now has two independent proof mechanisms over the same row:
+
+- This module's `canonical()` — the spec — consumed by ClaimYour.Gold's
+  nightly day-commitment (`src/ledger/anchor.ts` there): pipe-joined,
+  `recordedAt` at SECONDS precision.
+- flashynetwork.com's `settlement/1` leaf (`src/lib/settlementLeaf.ts` there):
+  `JSON.stringify` of the same six values under different key names
+  (`at`, not `recordedAt`), at MILLISECOND precision, folded per-entry into
+  its own transparency log as each row is written.
+
+**The two were not unified, and the module below explains why that is the
+correct call, not an unexamined one.** Two independent divergences — the
+encoding (pipe-joined string vs. JSON object) and the timestamp precision
+(seconds vs. milliseconds) — mean making them share a hash is not a local
+fix: it is a breaking migration on the consuming side. flashynetwork's
+committed `notary-log.json` already holds well over 12,000 sealed
+`settlement/1` leaves, each reproducible only from ITS current pre-image;
+changing that pre-image to match this spec's byte layout would make every
+one of those leaves permanently unverifiable against what was already
+published. This repository's own doctrine is exactly this shape one level up
+— `datasetSha256`, once committed in a `Commitment`, is never recomputed
+under a new convention; a format change here is a new commit, never a silent
+reinterpretation of an old one. The same rule, applied one hop downstream,
+says do not touch this spec's bytes to make somebody else's already-sealed
+history agree with them.
+
+**It would be the wrong call even without the sealed-leaf problem.** This
+spec commits to a day-batched, sort-order-insensitive SET — `sortEntries()`
+exists precisely so the root does not depend on write order, which is the
+whole point of a day root a reader rebuilds regardless of what order the
+day's rows arrived in. flashynetwork's settlement log is the opposite shape
+on purpose: a running, append-as-written, position-ordered log, correct the
+instant one entry lands. (Flashy Rails' `docs/explorer.md` makes the
+identical argument for why ITS settlement log does not reuse this module's
+sorted-set construction either — three independent systems now converge on
+"a batched commitment and a running log are different claims, so they stay
+different hashes," which is the kind of agreement that makes a design
+decision rather than a coincidence.)
+
+**What ships instead, on both consuming repositories:** a one-hop
+cross-reference keyed by the id both systems already share (the ledger's
+`SnapshotEntry.id` is ClaimYour.Gold's `publicId`, which is also
+flashynetwork's `PublicEntry.id`) — never a fetch, never a hash. ClaimYour.Gold's
+`getProof()` now returns `notaryEntryUrl`, flashynetwork's own permalink for
+the same entry; flashynetwork's `/explorer/{id}` page links back to
+ClaimYour.Gold's `GET /api/v1/public/ledger/proof/{id}` for the same entry.
+Neither is this spec's concern to enforce — this module stays exactly as it
+was, with this section recording that the alternative was considered and
+measured, not skipped.
+
 ## Publishing
 
 `publishConfig` targets `https://registry.npmjs.org/` with public access, and
