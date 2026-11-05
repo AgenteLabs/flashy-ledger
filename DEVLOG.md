@@ -3,6 +3,10 @@
 _This is the changelog. "Devlog" and "changelog" name the same document here —_
 _see `devlog/1` in `packages/shiplog/SPEC.md` if that reads like it needs reconciling._
 
+## 2026-11-05
+
+- Rename package to @flashynetwork/ledger, bump to 2.0.0 (#28) ([`eedd5bc4ce1e`](https://github.com/FlashyLabs/flashy-ledger/commit/eedd5bc4ce1e457255b61c7c922e9348c51abae9))
+
 ## 2026-11-03
 
 - Document why settlement/1 does not reuse this spec's canonical form (#26) ([`31d7be84ea62`](https://github.com/FlashyLabs/flashy-ledger/commit/31d7be84ea62b516699707e9868452e432915e2d))

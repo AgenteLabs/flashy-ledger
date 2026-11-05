@@ -2,8 +2,15 @@
   "devlog": "1",
   "source": "repo/flashy-ledger",
   "org": "org/flashy-ledger",
-  "generated": "2026-11-05T04:26:41.389Z",
+  "generated": "2026-11-05T11:47:41.132Z",
   "entries": [
+    {
+      "id": "devlog/flashy-ledger/eedd5bc4ce1e",
+      "at": "2026-11-05T18:47:27+07:00",
+      "summary": "Rename package to @flashynetwork/ledger, bump to 2.0.0 (#28)",
+      "commitSha": "eedd5bc4ce1e457255b61c7c922e9348c51abae9",
+      "ref": "https://github.com/FlashyLabs/flashy-ledger/commit/eedd5bc4ce1e457255b61c7c922e9348c51abae9"
+    },
     {
       "id": "devlog/flashy-ledger/31d7be84ea62",
       "at": "2026-11-03T22:24:07+07:00",
