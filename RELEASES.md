@@ -58,6 +58,7 @@ tagged never succeeded.
 | 0.8.0 | `e52704b` | ✅ v0.8.0 | **landed** (run 14) | same shape as 0.6.3. Tagged 2026-09-05; runs 15 and 16 both answered E409 |
 | 1.0.0 | `eac50d8` | ⚠️ `v1.0.0` unbacked | ❌ **ENEEDAUTH** (not on either registry) | "Bump to 1.0.0 for npm publication". The bump commit forgot this row, so `releases.test.ts` was red. The three `publish.yml` runs on 2026-09-25 built the 1.0.0 tarball (89 files, 311 kB) and every one failed at **Publish to npm** with `npm error code ENEEDAUTH` — never authenticated to `npm.pkg.github.com`, the target at the time. `npm view` on registry.npmjs.org answered 404 on 2026-09-28. `origin`'s `v1.0.0` tag points at `1a8aba6` ("Allow test failures for now"), so it backs **no published release** — the one thing the rule below forbids; a local tag of the same name has pointed at `eac50d8` — two tags, one name; read `git ls-remote --tags origin` before trusting either. The tag is still a valid git ref, so a consumer can install from it (`#v1.0.0` builds via `prepare`); it is just not on a registry. See the 2026-10-05 note. The 1.0.0 tree now carries four fixes our own interleaving audit found behind the green suite, so the publish that finally lands on npmjs will have them: `post`/`postTransfer` re-assert the `Minor` brand at runtime (a JSON body can no longer hash a NaN, a fraction or a string into a chain); the reference `InMemoryLedgerStore.appendAll` guards the chain head, so two concurrent appends cannot both land and fork it (invariant I-9, one head per chain); and a transfer from an identity to itself is refused (`SELF_TRANSFER`) rather than forking the chain and minting. The `invariants/1` harness from spec-kit is vendored and drives these under concurrency with a mutation check each |
 | 1.0.1 | — | ❌ | pending | First release under `@flashyos/ledger` (the `@flashylabs` scope no longer resolves after the account rename). Same tree as the declared 1.0.0, which was tagged but never published; 1.0.1 because `v1.0.0` already exists on the remote and the dispatch flow refuses an already-tagged version |
+| 2.0.0 | — | ❌ | pending | Scope rename: @flashyos/ledger -> @flashynetwork/ledger (estate-wide decision, 2026-11). Same tree as 1.0.1; see README "Publishing" |
 
 **Confirmed 2026-09-05.** Pushing v0.6.3 and v0.8.0 fired the tag flow, and both
 runs reached `npm publish` and stopped at **E409 Cannot publish over existing
@@ -107,6 +108,27 @@ even for a public package, keeps the versions above and receives no new ones.
 Nothing is on the public registry yet — README, "Publishing". What remains is
 an owner action, not a code change: set `NPM_TOKEN` and dispatch `Publish`;
 the next landed row here is the measurement that it worked.
+
+## 2026-11: scope rename to @flashynetwork — pending a publish
+
+`package.json` now declares `@flashynetwork/ledger@2.0.0` (this file's own
+title still says `@flashyos/ledger` because that is the scope every row above
+this one shipped under — a release ledger does not rewrite its own history to
+match the newest name). The jump from 1.0.1 straight to 2.0.0, skipping a
+1.0.2 or a 1.1.0, is deliberate: `flashy-rails`' `package.json` already
+declares `"@flashynetwork/ledger": "^2.0.0"` and currently 404s installing it,
+so 2.0.0 under the new scope is the version that actually closes that gap —
+a 1.0.2 under the old scope would not.
+
+As with every prior row, a version in `package.json` is not a version on the
+registry. `npm view @flashynetwork/ledger` has not been checked against the
+public registry as of this note; until the owner sets
+`NPM_TOKEN_FLASHYNETWORK_CI` (or confirms `NPM_TOKEN` already has publish
+rights on `@flashynetwork`) and dispatches `Publish`, assume 2.0.0 is not
+installable from npmjs. The old-scope versions up to 1.0.1 are not removed —
+nothing here is ever unpublished — and `deprecate-old-scope.yml` exists to
+point anyone still on `@flashyos/ledger` at the new name, once a human
+dispatches it.
 
 ## Adding a release
 
