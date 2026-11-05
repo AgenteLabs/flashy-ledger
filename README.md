@@ -1,4 +1,4 @@
-# @flashyos/ledger
+# @flashynetwork/ledger
 
 ```
         ██
@@ -47,7 +47,7 @@ chain — without its rules changing.
 **Consumer** — once published (it is not yet; see **Publishing**, below):
 
 ```bash
-npm install @flashyos/ledger
+npm install @flashynetwork/ledger
 ```
 
 **Developer** — clone and check:
@@ -62,7 +62,7 @@ npm run check     # typecheck + lint + tests with coverage gates + standalone no
 ```ts
 import {
   InMemoryLedgerStore, post, fromDecimal, type Asset,
-} from '@flashyos/ledger'
+} from '@flashynetwork/ledger'
 
 const gold: Asset = {
   id: 'asset_fg', slug: 'flashy-gold', symbol: 'FG',
@@ -217,7 +217,7 @@ every balance a hundred times wrong. That class of bug is not fixed by
 correcting the four. It is fixed by there being one.
 
 Precision is per asset and enforced at the boundary: `fromDecimal(0.5, 0)`
-throws rather than rounding, because rounding somebody's holding is not a thing
+throws rather than rounds, because rounding somebody's holding is not a thing
 a ledger may do quietly.
 
 Multi-asset does **not** mean assets exchange freely. Conversion is a commercial
@@ -258,7 +258,7 @@ past it is labelled North Star until its code ships.
 
 ## Status
 
-`package.json` declares 1.0.0, and nothing at that version is on the public
+`package.json` declares 2.0.0, and nothing at that version is on the public
 registry yet ([Publishing](#publishing)). The entry format and the hash input
 are what a major version pins: changing the fields `hashEntry` joins, or
 their order, invalidates every existing chain and is a breaking change with a
@@ -311,15 +311,27 @@ has not been built.
 
 ## Publishing
 
-**Not yet on the public registry, and not under the old name.** The package is
-`@flashyos/ledger`. `@flashylabs/ledger` was published to GitHub Packages up to
-0.8.0 and that scope stopped resolving when the GitHub account was renamed, so
-nothing is installable under it any more. `npm view @flashyos/ledger --registry
-https://registry.npmjs.org/` answered 404 on 2026-10-26; the first release
-under the new name is 1.0.1 (1.0.0 was tagged but never published, see
-[`RELEASES.md`](./RELEASES.md)). Versions up to 0.8.0 stay on GitHub Packages,
-which needs a token even to read a public package — so that is no longer the
-target.
+**The package is now `@flashynetwork/ledger`**, renamed from `@flashyos/ledger`
+as part of an estate-wide npm scope reorganisation (decided 2026-11; see
+[`RELEASES.md`](./RELEASES.md)). This is the second rename this package has
+had: `@flashylabs/ledger` was published to GitHub Packages up to 0.8.0 and
+stopped resolving when the GitHub account was renamed to `@flashyos`;
+`@flashyos/ledger` then reached 1.0.1 on the public npm registry before this
+move. **Nothing is ever unpublished** — every `@flashyos/ledger` version up
+to 1.0.1 remains on the registry exactly as it was, and
+[`.github/workflows/deprecate-old-scope.yml`](./.github/workflows/deprecate-old-scope.yml)
+exists to mark that scope deprecated, pointing anyone still installing it at
+`@flashynetwork/ledger` instead. That workflow is `workflow_dispatch`-only: a
+human runs it once, by hand, after confirming the new scope is actually live.
+
+As of this rename, `@flashynetwork/ledger@2.0.0` has not itself been
+published yet — `npm view @flashynetwork/ledger` has not been checked against
+the public registry since the rename landed in source. The version jumps
+straight from 1.0.1 to 2.0.0 (skipping a 1.0.2 or 1.1.0) because
+[`flashy-rails`](https://github.com/AgenteLabs/flashy-rails)'s own
+`package.json` already declares `"@flashynetwork/ledger": "^2.0.0"` and
+currently 404s installing it — 2.0.0 under the new scope is the version that
+actually satisfies that range.
 
 `publishConfig` points at `https://registry.npmjs.org/` with `access:
 public`, and `.github/workflows/publish.yml` publishes there on a pushed
@@ -328,11 +340,12 @@ the publish lands. It needs exactly one repository secret:
 
 | Secret | What | Where it comes from |
 |---|---|---|
-| `NPM_TOKEN` | An npm access token with publish rights on the `@flashyos` scope (granular token: read and write on the package or scope, with 2FA bypass for automation) | npmjs.com → Access Tokens; store it only as a GitHub Actions secret, never in a file |
+| `NPM_TOKEN_FLASHYNETWORK_CI` | An npm access token with publish rights on the `@flashynetwork` scope (granular token: read and write on the package or scope, with 2FA bypass for automation). Falls back to `NPM_TOKEN` if the scope-specific secret is not set. | npmjs.com → Access Tokens; store it only as a GitHub Actions secret, never in a file |
 
 Without it the workflow refuses to run — it does not fall back to another
-registry. When the first publish lands, replace the first sentence of this
-section with the version and date, and add the row to `RELEASES.md`.
+registry. When the first publish under the new scope lands, replace the
+second paragraph of this section with the version and date, and add the row
+to `RELEASES.md`.
 
 ## The invariants
 

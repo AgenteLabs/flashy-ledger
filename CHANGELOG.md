@@ -5,6 +5,24 @@ versions follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [2.0.0] — pending first publish
+
+### Changed — BREAKING (scope rename, not an API change)
+
+- **The package is now `@flashynetwork/ledger`.** Renamed from
+  `@flashyos/ledger` as part of an estate-wide npm scope reorganisation
+  (decided 2026-11; see [`RELEASES.md`](./RELEASES.md)). No API changes: this
+  is the 1.0.1 tree under a new name. The major version moves (1.0.1 -> 2.0.0,
+  skipping 1.0.2/1.1.0) because
+  [`flashy-rails`](https://github.com/AgenteLabs/flashy-rails)'s own
+  `package.json` already declares `"@flashynetwork/ledger": "^2.0.0"` and
+  currently 404s installing it — 2.0.0 under the new scope is the version that
+  actually satisfies that range; a 1.0.2 under the old scope would not have.
+  `@flashyos/ledger` versions up to 1.0.1 remain on the registry — nothing is
+  ever unpublished — and are deprecated via a separate, human-triggered
+  workflow (`.github/workflows/deprecate-old-scope.yml`) pointing consumers at
+  the new name.
+
 ## [1.0.1] — pending first publish
 
 ### Changed

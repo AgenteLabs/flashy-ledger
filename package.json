@@ -1,6 +1,6 @@
 {
-  "name": "@flashyos/ledger",
-  "version": "1.0.1",
+  "name": "@flashynetwork/ledger",
+  "version": "2.0.0",
   "description": "Append-only, multi-asset settlement ledger. Storage-agnostic by construction.",
   "keywords": [
     "settlement ledger",

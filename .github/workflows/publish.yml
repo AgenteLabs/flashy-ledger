@@ -21,10 +21,14 @@ name: Publish
 # there; nothing here publishes to it any more, and PACKAGES_TOKEN is read
 # by no workflow in this repository.
 #
-# One secret: NPM_TOKEN, an npm access token with publish rights on the
-# @flashyos scope (README, "Publishing"). Without it the job REFUSES,
-# before installing anything — there is no fallback registry to land on by
-# accident.
+# The package moved scope again (previously published under the @flashyos
+# scope) to @flashynetwork/ledger at 2.0.0 (estate-wide npm scope
+# reorganisation; see README, "Publishing", and RELEASES.md). One secret:
+# NPM_TOKEN_FLASHYNETWORK_CI, an npm access token with publish rights on the
+# @flashynetwork scope, falling back to NPM_TOKEN for a repository that has
+# not yet been given the scope-specific name. Without either the job
+# REFUSES, before installing anything — there is no fallback registry to
+# land on by accident.
 on:
   push:
     tags:
@@ -48,7 +52,7 @@ jobs:
         with:
           node-version: 22
           cache: npm
-          # setup-node writes `@flashyos:registry=<registry-url>` into the
+          # setup-node writes `@flashynetwork:registry=<registry-url>` into the
           # userconfig it points NPM_CONFIG_USERCONFIG at, and a SCOPED
           # registry entry beats both publishConfig.registry and --registry.
           # That is the mechanism that once sent an npmjs token to GitHub
@@ -56,18 +60,18 @@ jobs:
           # package.json's own publishConfig and cannot be overridden by a
           # stray .npmrc in the checkout.
           registry-url: https://registry.npmjs.org
-          scope: "@flashyos"
+          scope: "@flashynetwork"
 
       # Fail closed, first. A publish that "succeeds" by falling back to a
       # token-less registry, or that gets as far as the PUT before finding
       # out there is no credential, is the shape every prior failure here
       # took. The refusal is the gate.
-      - name: Refuse to run without NPM_TOKEN
+      - name: Refuse to run without NPM_TOKEN_FLASHYNETWORK_CI
         env:
-          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN_FLASHYNETWORK_CI || secrets.NPM_TOKEN }}
         run: |
           if [ -z "$NPM_TOKEN" ]; then
-            echo "::error::NPM_TOKEN is not set. Add an npm access token with publish rights on @flashyos as a repository secret named NPM_TOKEN (see README, Publishing). Nothing was published." >&2
+            echo "::error::No npm token found. Add an npm access token with publish rights on @flashynetwork as a repository secret named NPM_TOKEN_FLASHYNETWORK_CI (or NPM_TOKEN, see README, Publishing). Nothing was published." >&2
             exit 1
           fi
 
@@ -103,13 +107,33 @@ jobs:
             exit 1
           fi
 
+      # Belt and braces alongside the tag check above: the tag check catches
+      # a version this repository already released; this catches a version
+      # already on the registry by some other path (a manual publish, a
+      # publish from another checkout) so a re-run of this workflow is safe
+      # rather than failing with E409. Same shape as flashy-rails'
+      # publish.yml "Skip if this version is already published" step.
+      - name: Skip if this version is already published
+        id: check
+        run: |
+          V="$(node -p "require('./package.json').version")"
+          if [ -n "$(npm view "@flashynetwork/ledger@$V" version 2>/dev/null || true)" ]; then
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+            echo "::notice::@flashynetwork/ledger@$V is already published. Skipping."
+          else
+            echo "skip=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::@flashynetwork/ledger@$V will be published."
+          fi
+
       # The registry checks version-existence before it verifies the token,
       # so an E409 here means "already published", not "authenticated" —
-      # read the error, not the step colour.
+      # read the error, not the step colour. The skip guard above is what
+      # keeps a re-run from reaching this at all once a version has landed.
       - name: Publish to registry.npmjs.org
         id: publish
+        if: steps.check.outputs.skip != 'true'
         env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN_FLASHYNETWORK_CI || secrets.NPM_TOKEN }}
         run: npm publish --access public
 
       # Only after the PUBLISH succeeded. `steps.publish.conclusion` is
