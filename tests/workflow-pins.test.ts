@@ -9,7 +9,7 @@ import { describe, expect, it } from 'vitest';
  * compromises their account) and CI would silently start running whatever
  * that tag now points to. A commit SHA can't move.
  *
- * `FlashyLabs/flashy-infra/.github/workflows/secret-scan-reusable.yml@main`
+ * `AgenteLabs/flashy-infra/.github/workflows/secret-scan-reusable.yml@main`
  * is exempt: it is an internal, org-owned reusable workflow, not a
  * third-party action, so it does not carry the same retargeting risk this
  * test exists to catch.
@@ -22,7 +22,7 @@ import { describe, expect, it } from 'vitest';
 const root = join(__dirname, '..');
 const workflowsDir = join(root, '.github', 'workflows');
 const SHA_PIN = /^[0-9a-f]{40}$/;
-const INTERNAL_REUSABLE = /^FlashyLabs\//;
+const INTERNAL_REUSABLE = /^AgenteLabs\//;
 
 function findUsesLines(text: string) {
   return text
