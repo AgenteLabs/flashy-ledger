@@ -21,13 +21,14 @@ name: Publish
 # there; nothing here publishes to it any more, and PACKAGES_TOKEN is read
 # by no workflow in this repository.
 #
-# The package moved scope again, from @flashyos/ledger to @flashynetwork/ledger
-# at 2.0.0 (estate-wide npm scope reorganisation; see README, "Publishing",
-# and RELEASES.md). One secret: NPM_TOKEN_FLASHYNETWORK_CI, an npm access
-# token with publish rights on the @flashynetwork scope, falling back to
-# NPM_TOKEN for a repository that has not yet been given the scope-specific
-# name. Without either the job REFUSES, before installing anything — there
-# is no fallback registry to land on by accident.
+# The package moved scope again (previously published under the @flashyos
+# scope) to @flashynetwork/ledger at 2.0.0 (estate-wide npm scope
+# reorganisation; see README, "Publishing", and RELEASES.md). One secret:
+# NPM_TOKEN_FLASHYNETWORK_CI, an npm access token with publish rights on the
+# @flashynetwork scope, falling back to NPM_TOKEN for a repository that has
+# not yet been given the scope-specific name. Without either the job
+# REFUSES, before installing anything — there is no fallback registry to
+# land on by accident.
 on:
   push:
     tags:
