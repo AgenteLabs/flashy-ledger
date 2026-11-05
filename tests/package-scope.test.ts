@@ -59,10 +59,10 @@ describe('npm scope rename: @flashyos/ledger -> @flashynetwork/ledger', () => {
       publishConfig?: { access?: string };
     };
     expect(pkg.name).toBe(NEW_SCOPE);
-    expect(pkg.publishConfig?.access).toBe(
-      'public',
-      // eslint-disable-next-line @typescript-eslint/no-unused-expressions
-    );
+    expect(
+      pkg.publishConfig?.access,
+      'publishConfig.access must be "public" for a scoped package meant to be installable by anyone',
+    ).toBe('public');
   });
 
   it('no file this rename touches still names the old scope, except where it is naming it on purpose', () => {
@@ -79,7 +79,7 @@ describe('npm scope rename: @flashyos/ledger -> @flashynetwork/ledger', () => {
 
   it('publish.yml names the new scope and not the old one', () => {
     const text = readFileSync(join(ROOT, '.github', 'workflows', 'publish.yml'), 'utf8');
-    expect(text.includes(NEW_SCOPE) || text.includes('@flashynetwork')).toBe(true);
+    expect(text.includes(NEW_SCOPE)).toBe(true);
     expect(text.includes(OLD_SCOPE)).toBe(false);
   });
 
