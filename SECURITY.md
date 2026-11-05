@@ -1,18 +1,59 @@
+<!-- estate-hygiene:begin — emitted by tools/estate-hygiene-files.mjs in AgenteLabs/flashyos; regenerate, never edit -->
 # Security
 
-## Reporting
+## Reporting a vulnerability
 
-Report suspected vulnerabilities to **security@flashy.network** rather than a
-public issue. We acknowledge within 72 hours and tell you what we are doing.
+Report it privately, never in a public issue, pull request or chat channel.
+Two routes, and both reach the same people:
 
-This is the same address and the same commitment published at
-https://flashynetwork.com/security/ . One disclosure route across the estate is
-deliberate: a researcher who finds two and picks the worse one has been failed
-by us, not by their choice.
+- **Email michael@flashygroup.com** — the estate's one disclosure address, the same one
+  published at https://flashynetwork.com/security/
+  and in https://flashynetwork.com/.well-known/security.txt.
+  One route across every repository is deliberate: a researcher who finds two
+  addresses and picks the worse one has been failed by us, not by their choice.
+- **GitHub → Security → Report a vulnerability** on this repository, which
+  opens a private advisory only the maintainers can read. If that button is
+  missing, private vulnerability reporting has not been enabled on this
+  repository yet; use the email route and say so in the report.
 
-If a report reveals a discrepancy in a ledger, it appears on
-https://flashynetwork.com/incidents/ once corrected — including the ones we would
-rather not publish.
+Include what you found, how to reproduce it and what you believe the impact
+is. Do not include real credentials, private keys or production data: nothing
+here needs them to reproduce a finding.
+
+## What to expect
+
+| | |
+|---|---|
+| Acknowledgement | within 72 hours |
+| An assessment, and what we are doing | agreed with you, in writing |
+| Publication | a window agreed with you, never imposed |
+
+If we miss the acknowledgement window, say so publicly. A window nobody is
+held to is worse than none, because it asks a reporter to wait on a promise
+that was never load-bearing.
+
+## Supported versions
+
+The default branch only. There is no maintained release line behind it: a
+finding against the default branch is in scope, a finding against an older
+tag or a fork is a reason to update.
+
+## A committed credential is rotated, never removed
+
+If a report is that a secret reached this repository, the fix is rotation at
+the issuer. Deleting the file, rewriting history or force-pushing is not a
+fix: the value is burned the moment it lands and stays burned, because
+history, forks, caches and mirrors keep it. Say which secret, and we rotate
+it before anything else.
+
+## About this document
+
+The sections above are emitted by [`tools/estate-hygiene-files.mjs`](https://github.com/AgenteLabs/flashyos/blob/main/tools/estate-hygiene-files.mjs)
+in AgenteLabs/flashyos from one template the whole estate shares, and
+`--check` fails when they drift.
+Regenerate them; never edit them here. Anything below the marker is this
+repository's own and is kept as written.
+<!-- estate-hygiene:end — everything below is this repository’s own -->
 
 ## What this package guarantees
 
@@ -37,14 +78,3 @@ rather not publish.
 Changing the fields hashed by `hashEntry`, or their order, invalidates every
 chain written before the change. Treat it as a breaking migration with a
 re-hashing plan, not as a refactor.
-
-## Response and disclosure windows
-
-Acknowledgement within 72 hours, a status update at least every 7 days
-until resolution, and coordinated disclosure: give us 90 days — or agree a
-different window with us — before publishing.
-
-## Supported versions
-
-The latest published minor. Older versions get fixes only when the finding
-is severe and the upgrade path is breaking.
