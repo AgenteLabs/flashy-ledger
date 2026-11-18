@@ -1,0 +1,56 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/FlashyLabs/flashy-ledger/schema/inclusion-proof.json",
+  "title": "Inclusion proof",
+  "description": "The path proving one entry is in the tree, as inclusionProof() in src/domain/merkle.ts returns it. A root says a set was committed to; this says a particular entry was in that set. A reader recomputes the root from the entry they hold, the path and the root they fetched elsewhere, which verifyInclusion() does. A promoted odd node has no sibling and contributes no step, so the path is shorter than the tree is tall for some entries and empty for a one-entry tree. Every digest is lower-case hex with a 0x prefix. Unknown keys are refused unless prefixed `x-`.",
+  "type": "object",
+  "properties": {
+    "entryId": {
+      "type": "string",
+      "minLength": 1,
+      "description": "The id of the entry the proof is for."
+    },
+    "leaf": {
+      "$ref": "#/$defs/hex",
+      "description": "The leaf hash of that entry: SHA256(0x00 || canonical)."
+    },
+    "path": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/step" },
+      "description": "Bottom to top, one step per level at which the entry's node had a sibling."
+    },
+    "root": {
+      "$ref": "#/$defs/hex",
+      "description": "The root the path leads to."
+    }
+  },
+  "required": ["entryId", "leaf", "path", "root"],
+  "patternProperties": {
+    "^x-": {}
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "hex": {
+      "type": "string",
+      "pattern": "^0x[0-9a-f]{64}$",
+      "description": "A sha256 digest: 0x, then 64 lower-case hexadecimal characters."
+    },
+    "step": {
+      "type": "object",
+      "description": "One level of the path: the sibling to combine with, and which side it sits on.",
+      "properties": {
+        "sibling": { "$ref": "#/$defs/hex" },
+        "side": {
+          "type": "string",
+          "enum": ["left", "right"],
+          "description": "Which side the sibling sits on when recomputing the parent. Mirrors `ProofStep` in src/domain/merkle.ts; tests/schema.test.mjs fails if the two drift."
+        }
+      },
+      "required": ["sibling", "side"],
+      "patternProperties": {
+        "^x-": {}
+      },
+      "additionalProperties": false
+    }
+  }
+}

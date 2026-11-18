@@ -34,6 +34,26 @@ export default tseslint.config(
     },
   },
   {
+    // The dependency-free node --test files (`npm run test:standalone`) are
+    // plain ESM outside the TypeScript project. Type-aware rules cannot run
+    // over them — the project service refuses a file tsconfig does not
+    // include, which is how `npm run lint` was red on
+    // tests/cross-linking.test.mjs — so they get the untyped rule set.
+    files: ['**/*.mjs'],
+    ...tseslint.configs.disableTypeChecked,
+    languageOptions: {
+      // Merged, not replaced: the spread above is what switches the project
+      // service off for these files, and a bare `languageOptions` here would
+      // silently discard it.
+      ...tseslint.configs.disableTypeChecked.languageOptions,
+      globals: { console: 'readonly', process: 'readonly' },
+    },
+    rules: {
+      ...tseslint.configs.disableTypeChecked.rules,
+      '@typescript-eslint/explicit-module-boundary-types': 'off',
+    },
+  },
+  {
     files: ['tests/**/*.ts'],
     rules: {
       '@typescript-eslint/no-unsafe-assignment': 'off',

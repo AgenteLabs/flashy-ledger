@@ -1,11 +1,12 @@
 import { isTransferable, type Asset } from './asset.js'
 import type { Entry, EntryKind, EntrySource, HashableEntry } from './entry.js'
 import { hashEntry } from './entry.js'
-import { add, isZero, isNegative, negate, type Minor } from './money.js'
+import { add, isZero, isNegative, minor, negate, type Minor } from './money.js'
 import {
   assetNotTransferable,
   insufficientBalance,
   missingIdempotencyKey,
+  selfTransfer,
   zeroAmount,
 } from './errors.js'
 import { assertOpaqueIdentity } from './identity.js'
@@ -50,6 +51,12 @@ export function post(state: LedgerState, command: PostCommand): ProposedEntry {
   // Before anything is hashed. An identity that names a person cannot be taken
   // back out of a chain, so the only place to stop it is on the way in.
   assertOpaqueIdentity(command.identityId)
+  // The Minor brand is a compile-time promise. A JavaScript caller — or a JSON
+  // body — can hand in undefined, 0.5 or "500", and each one would be hashed
+  // into a chain: NaN balances, a fractional holding, or a string concatenated
+  // onto a number. The brand is re-asserted at runtime, on the one path every
+  // entry takes.
+  minor(command.amount)
   if (isZero(command.amount)) throw zeroAmount()
 
   const balanceAfter = add(state.balance, command.amount)
@@ -100,9 +107,15 @@ export function postTransfer(
   to: TransferParty,
   command: TransferCommand,
 ): readonly [ProposedEntry, ProposedEntry] {
+  minor(command.amount)
   if (isNegative(command.amount) || isZero(command.amount)) {
     throw zeroAmount()
   }
+
+  // Both legs would be posted against the same state and chain onto the same
+  // head: a fork, which the store refuses, or — if it did not — a credit of
+  // the full amount on top of an unchanged balance. There is nothing to move.
+  if (from.identityId === to.identityId) throw selfTransfer(from.identityId)
 
   // Some assets record who earned something rather than who holds it. Moving
   // one is not a transfer, it is a forgery — and the rule belongs here, where

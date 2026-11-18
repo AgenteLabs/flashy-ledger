@@ -17,7 +17,8 @@ export type LedgerErrorCode =
   | 'INSUFFICIENT_FOR_CONSUMPTION'
   | 'DUPLICATE_ASSET_IN_COMMAND'
   | 'NATURAL_KEY_IDENTITY'
-  | 'ASSET_NOT_TRANSFERABLE';
+  | 'ASSET_NOT_TRANSFERABLE'
+  | 'SELF_TRANSFER';
 
 export const insufficientBalance = (available: number, requested: number): LedgerError =>
   new LedgerError(
@@ -73,4 +74,11 @@ export const assetNotTransferable = (slug: string, assetClass: string): LedgerEr
   new LedgerError(
     'ASSET_NOT_TRANSFERABLE',
     `${slug} is ${assetClass} and cannot move between identities`,
+  );
+
+export const selfTransfer = (identityId: string): LedgerError =>
+  new LedgerError(
+    'SELF_TRANSFER',
+    `A transfer from ${identityId} to itself moves nothing. Its debit and credit would both ` +
+      'chain onto the same head, forking the chain and crediting the sum of both legs.',
   );

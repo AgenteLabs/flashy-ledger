@@ -13,7 +13,7 @@ checkout beside this one.
 
 ## (repository root)
 
-- [Release ledger — @flashylabs/ledger](../RELEASES.md) <sub>2026-09-05</sub>
+- [Release ledger — @flashyos/ledger](../RELEASES.md) <sub>2026-09-05</sub>
 - [⚡ STRIKERS](../STRIKERS.md) <sub>2026-08-25</sub>
 
 ## .github

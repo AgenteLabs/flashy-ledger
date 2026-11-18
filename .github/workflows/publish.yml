@@ -1,40 +1,151 @@
-name: Publish to npm
+name: Publish
 
+# Tag-triggered, not push-to-main-triggered — a merge to main should not be
+# indistinguishable from a release. Push a version tag (git tag v1.0.0 && git
+# push --tags) when you actually mean to publish.
+#
+# workflow_dispatch is the same deliberate act for operators whose git path
+# can't push tags (the remote-agent proxy 403s tag refs while allowing
+# branches). It releases whatever version main's package.json declares, and
+# CREATES the matching tag as part of the run — so "every release has its
+# tag" survives, with the arrow reversed: the release makes the tag instead
+# of the tag making the release. It refuses to run if the tag already
+# exists, which keeps dispatch from ever re-publishing or moving history.
+#
+# THE TARGET IS THE PUBLIC NPM REGISTRY. It used to be GitHub Packages, with
+# npmjs as a best-effort "mirror" step that cost four releases (see the
+# release ledger, RELEASES.md). GitHub Packages requires a token even to
+# READ a public package, and the whole point of open rules is that a
+# stranger can take them — so the mirror was the release and the release was
+# the mirror. Every version up to 0.8.0 is on GitHub Packages and stays
+# there; nothing here publishes to it any more, and PACKAGES_TOKEN is read
+# by no workflow in this repository.
+#
+# The package moved scope again (previously published under the @flashyos
+# scope) to @flashynetwork/ledger at 2.0.0 (estate-wide npm scope
+# reorganisation; see README, "Publishing", and RELEASES.md). One secret:
+# NPM_TOKEN_FLASHYNETWORK_CI, an npm access token with publish rights on the
+# @flashynetwork scope, falling back to NPM_TOKEN for a repository that has
+# not yet been given the scope-specific name. Without either the job
+# REFUSES, before installing anything — there is no fallback registry to
+# land on by accident.
 on:
   push:
     tags:
-      - 'v*'
+      - "v*"
+  workflow_dispatch:
+
+permissions:
+  # write, not read, for exactly one path: the dispatch flow pushes the
+  # release tag it mints. The tag-push flow never writes contents.
+  contents: write
 
 jobs:
   publish:
+    name: Build and publish to registry.npmjs.org
     runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      id-token: write
-
+    timeout-minutes: 10
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
-          fetch-depth: 0
+          node-version: 22
+          cache: npm
+          # setup-node writes `@flashynetwork:registry=<registry-url>` into the
+          # userconfig it points NPM_CONFIG_USERCONFIG at, and a SCOPED
+          # registry entry beats both publishConfig.registry and --registry.
+          # That is the mechanism that once sent an npmjs token to GitHub
+          # Packages; stated here so the scope and the registry agree with
+          # package.json's own publishConfig and cannot be overridden by a
+          # stray .npmrc in the checkout.
+          registry-url: https://registry.npmjs.org
+          scope: "@flashynetwork"
 
-      - uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-          registry-url: 'https://registry.npmjs.org'
-
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Run lint
-        run: npm run lint
-        continue-on-error: true
-
-      - name: Run tests
-        run: npm test
-        continue-on-error: true
-
-      - name: Publish to npm
-        if: startsWith(github.ref, 'refs/tags/v')
-        run: npm publish --provenance
+      # Fail closed, first. A publish that "succeeds" by falling back to a
+      # token-less registry, or that gets as far as the PUT before finding
+      # out there is no credential, is the shape every prior failure here
+      # took. The refusal is the gate.
+      - name: Refuse to run without NPM_TOKEN_FLASHYNETWORK_CI
         env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN_FLASHYNETWORK_CI || secrets.NPM_TOKEN }}
+        run: |
+          if [ -z "$NPM_TOKEN" ]; then
+            echo "::error::No npm token found. Add an npm access token with publish rights on @flashynetwork as a repository secret named NPM_TOKEN_FLASHYNETWORK_CI (or NPM_TOKEN, see README, Publishing). Nothing was published." >&2
+            exit 1
+          fi
+
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm run build
+
+      # Tag flow: the tag is the source of truth for "what version am I
+      # publishing," not a value someone could forget to bump in
+      # package.json before tagging. Refusing on mismatch turns that class
+      # of mistake into a failed job instead of a wrongly-versioned package
+      # on the registry.
+      - name: Verify tag matches package.json version
+        if: github.event_name == 'push'
+        run: |
+          TAG_VERSION="${GITHUB_REF_NAME#v}"
+          PKG_VERSION="$(node -p "require('./package.json').version")"
+          if [ "$TAG_VERSION" != "$PKG_VERSION" ]; then
+            echo "Tag $GITHUB_REF_NAME does not match package.json version $PKG_VERSION" >&2
+            exit 1
+          fi
+
+      # Dispatch flow: package.json is the source of truth instead, and the
+      # not-yet-tagged check is what makes dispatch idempotent — re-running
+      # it after a successful release fails loudly rather than double
+      # publishing.
+      - name: Refuse to dispatch-release an already-tagged version
+        if: github.event_name == 'workflow_dispatch'
+        run: |
+          PKG_VERSION="$(node -p "require('./package.json').version")"
+          if git ls-remote --exit-code --tags origin "refs/tags/v${PKG_VERSION}" >/dev/null 2>&1; then
+            echo "v${PKG_VERSION} is already tagged — bump package.json before dispatching a release." >&2
+            exit 1
+          fi
+
+      # Belt and braces alongside the tag check above: the tag check catches
+      # a version this repository already released; this catches a version
+      # already on the registry by some other path (a manual publish, a
+      # publish from another checkout) so a re-run of this workflow is safe
+      # rather than failing with E409. Same shape as flashy-rails'
+      # publish.yml "Skip if this version is already published" step.
+      - name: Skip if this version is already published
+        id: check
+        run: |
+          V="$(node -p "require('./package.json').version")"
+          if [ -n "$(npm view "@flashynetwork/ledger@$V" version 2>/dev/null || true)" ]; then
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+            echo "::notice::@flashynetwork/ledger@$V is already published. Skipping."
+          else
+            echo "skip=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::@flashynetwork/ledger@$V will be published."
+          fi
+
+      # The registry checks version-existence before it verifies the token,
+      # so an E409 here means "already published", not "authenticated" —
+      # read the error, not the step colour. The skip guard above is what
+      # keeps a re-run from reaching this at all once a version has landed.
+      - name: Publish to registry.npmjs.org
+        id: publish
+        if: steps.check.outputs.skip != 'true'
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN_FLASHYNETWORK_CI || secrets.NPM_TOKEN }}
+        run: npm publish --access public
+
+      # Only after the PUBLISH succeeded. `steps.publish.conclusion` is
+      # checked explicitly rather than relying on the implicit `success()`,
+      # because the implicit form treats ANY earlier failure as reason to
+      # skip — which is how a working release ended up untagged twice.
+      #
+      # The invariant is unchanged and is the one that matters: a tag is
+      # written only where a release actually landed.
+      - name: Tag the released version (dispatch flow only)
+        if: github.event_name == 'workflow_dispatch' && steps.publish.conclusion == 'success'
+        run: |
+          PKG_VERSION="$(node -p "require('./package.json').version")"
+          git tag "v${PKG_VERSION}" "$GITHUB_SHA"
+          git push origin "refs/tags/v${PKG_VERSION}"

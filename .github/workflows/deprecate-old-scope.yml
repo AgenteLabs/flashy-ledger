@@ -1,0 +1,65 @@
+name: Deprecate old npm scope
+
+# One-off, human-triggered. The package moved from @flashyos/ledger to
+# @flashynetwork/ledger at 2.0.0 (estate-wide npm scope reorganisation; see
+# README, "Publishing", and RELEASES.md). This workflow runs `npm deprecate`
+# against every version ever published under the old scope, pointing
+# consumers at the new name — it does not touch the new scope, and it never
+# runs on its own schedule. A human with the npm token triggers it, once,
+# after confirming the new scope is live on the registry.
+#
+# BELT AND BRACES, same shape as flashy-rails' deprecate-old-scope.yml for its
+# own @flashylabs -> @flashyfinancial move: @flashyos/ledger has versions up
+# to 1.0.1 on the public registry (see RELEASES.md) — this is not a
+# speculative deprecation of a name nothing ever published under. If a future
+# reader finds `npm view @flashyos/ledger` answers 404, `npm deprecate` on a
+# name that does not exist will simply fail, and that failure is the correct
+# reading, not a defect.
+#
+# Deliberately workflow_dispatch only:
+#   - no `push` trigger — this must never fire as a side effect of a commit
+#   - no `schedule` — deprecating is a one-time announcement, not a recurring job
+#
+# Uses the same npm secret publish.yml uses (NPM_TOKEN_FLASHYNETWORK_CI,
+# falling back to NPM_TOKEN) and refuses without one. It creates, reads, or
+# needs no other credential.
+#
+# actions/checkout and actions/setup-node are pinned to the same commit SHAs
+# publish.yml uses, per tests/workflow-pins.test.ts: a tag can be retargeted
+# upstream and CI would silently run whatever it now points to.
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  deprecate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: '22'
+          registry-url: 'https://registry.npmjs.org'
+
+      - name: Refuse without an npm token
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN_FLASHYNETWORK_CI || secrets.NPM_TOKEN }}
+        run: |
+          if [ -z "$NODE_AUTH_TOKEN" ]; then
+            echo "::error::No npm token found. Add one with publish rights on the old @flashyos scope as a repo secret named NPM_TOKEN_FLASHYNETWORK_CI or NPM_TOKEN."
+            exit 1
+          fi
+          if ! WHO=$(npm whoami 2>&1); then
+            echo "::error::The npm token is set but not valid — npm said: ${WHO}. Confirm this token has publish rights on the @flashyos scope."
+            exit 1
+          fi
+          echo "Authenticated to npm as ${WHO}"
+
+      - name: Deprecate every version of the old scope's package
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN_FLASHYNETWORK_CI || secrets.NPM_TOKEN }}
+        run: npm deprecate @flashyos/ledger@* "moved to @flashynetwork/ledger"

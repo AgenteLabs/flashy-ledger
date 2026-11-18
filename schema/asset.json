@@ -1,0 +1,45 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/FlashyLabs/flashy-ledger/schema/asset.json",
+  "title": "Asset",
+  "description": "An asset is a configuration record, not a code path. Mirrors `Asset` in src/domain/asset.ts: an AssetDefinition (slug, symbol, decimals, class — what is true everywhere) materialised onto one tenant's books with an `id`. Nothing in the engine knows what gold is, which is exactly why it can settle something else. Unknown keys are refused unless prefixed `x-`.",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Supplied at the edge by materialize(); no default. Entries reference this value in `assetId`. In production it is the ObjectId of a row in the consumer's assets collection — never the slug."
+    },
+    "slug": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9]*(-[a-z0-9]+)*$",
+      "description": "Stable machine name, lower-case kebab, e.g. 'flashy-gold', 'wheat'. The pattern is SLUG_PATTERN in src/domain/registry.ts (tests/schema.test.mjs fails if they drift); defineAsset() refuses anything else because it appears in URLs and every published registry."
+    },
+    "symbol": {
+      "type": "string",
+      "pattern": "^[A-Z][A-Z0-9]{1,7}$",
+      "description": "Ticker shown to people, e.g. 'FG', 'WHT'. 2–8 upper-case alphanumerics starting with a letter — SYMBOL_PATTERN in src/domain/registry.ts."
+    },
+    "decimals": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 8,
+      "description": "How many decimal places this asset settles to (0 to MAX_DECIMALS in src/domain/registry.ts). Commodities are usually 0. Precision is enforced at the boundary: fromDecimal(0.5, 0) throws rather than rounds. Flashy Gold is 2 — it was declared as 4 in one of four places once, and the wrong one was the published one."
+    },
+    "class": {
+      "type": "string",
+      "enum": ["REWARD_CURRENCY", "COMMODITY_UNIT", "PARTNER_CREDIT", "SKILL_XP"],
+      "description": "Mirrors `AssetClass` in src/domain/asset.ts; tests/schema.test.mjs fails if the two lists drift. SKILL_XP is not transferable: status settled with the money ledger's discipline, never convertible to it."
+    },
+    "tenantId": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Which network's books this asset belongs to."
+    }
+  },
+  "required": ["id", "slug", "symbol", "decimals", "class", "tenantId"],
+  "patternProperties": {
+    "^x-": {}
+  },
+  "additionalProperties": false
+}

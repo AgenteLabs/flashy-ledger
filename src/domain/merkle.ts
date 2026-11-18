@@ -31,7 +31,7 @@
  *    sets produce the same root, which is the flaw behind CVE-2012-2459. A
  *    promoted node carries to the next level unchanged.
  *
- * Amounts are signed integers in minor units, per ADR 0002 in @flashylabs/ledger.
+ * Amounts are signed integers in minor units, per ADR 0002 in @flashyos/ledger.
  * They are never floats here: a tree built over floating-point amounts would not
  * reproduce on a machine with a different rounding mode, which would make the
  * whole exercise worse than not doing it.

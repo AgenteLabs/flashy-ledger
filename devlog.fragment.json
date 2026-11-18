@@ -2,8 +2,57 @@
   "devlog": "1",
   "source": "repo/flashy-ledger",
   "org": "org/flashy-ledger",
-  "generated": "2026-09-25T09:39:57.824Z",
+  "generated": "2026-11-18T04:26:56.784Z",
   "entries": [
+    {
+      "id": "devlog/flashy-ledger/eedd5bc4ce1e",
+      "at": "2026-11-05T18:47:27+07:00",
+      "summary": "Rename package to @flashynetwork/ledger, bump to 2.0.0 (#28)",
+      "commitSha": "eedd5bc4ce1e457255b61c7c922e9348c51abae9",
+      "ref": "https://github.com/FlashyLabs/flashy-ledger/commit/eedd5bc4ce1e457255b61c7c922e9348c51abae9"
+    },
+    {
+      "id": "devlog/flashy-ledger/31d7be84ea62",
+      "at": "2026-11-03T22:24:07+07:00",
+      "summary": "Document why settlement/1 does not reuse this spec's canonical form (#26)",
+      "commitSha": "31d7be84ea62b516699707e9868452e432915e2d",
+      "ref": "https://github.com/FlashyLabs/flashy-ledger/commit/31d7be84ea62b516699707e9868452e432915e2d"
+    },
+    {
+      "id": "devlog/flashy-ledger/73052e8ab486",
+      "at": "2026-10-29T22:15:10+07:00",
+      "summary": "Merge pull request #24 from AgenteLabs/backlog-flashynetwork-item",
+      "commitSha": "73052e8ab486827a063b4ab34610c7be1bfda11f",
+      "ref": "https://github.com/FlashyLabs/flashy-ledger/commit/73052e8ab486827a063b4ab34610c7be1bfda11f"
+    },
+    {
+      "id": "devlog/flashy-ledger/972d1e846377",
+      "at": "2026-10-24T17:17:33+07:00",
+      "summary": "Merge pull request #20 from AgenteLabs/claude/dreamy-bell-2e5nq3",
+      "commitSha": "972d1e846377545c88b124769d540f8e3311409d",
+      "ref": "https://github.com/FlashyLabs/flashy-ledger/commit/972d1e846377545c88b124769d540f8e3311409d"
+    },
+    {
+      "id": "devlog/flashy-ledger/f956f7b7c35a",
+      "at": "2026-10-14T18:27:44+07:00",
+      "summary": "Merge pull request #15 from FlashyLabs/claude/ceo-estate-dashboard-gmtgl8",
+      "commitSha": "f956f7b7c35a14f274f894748b275c055baad621",
+      "ref": "https://github.com/FlashyLabs/flashy-ledger/commit/f956f7b7c35a14f274f894748b275c055baad621"
+    },
+    {
+      "id": "devlog/flashy-ledger/ada08f666af5",
+      "at": "2026-10-14T09:40:30+07:00",
+      "summary": "Merge pull request #14 from FlashyLabs/claude/flashy-ledger-architecture-audit-79az1h",
+      "commitSha": "ada08f666af584e299d09132ad49a5b717b7dc00",
+      "ref": "https://github.com/FlashyLabs/flashy-ledger/commit/ada08f666af584e299d09132ad49a5b717b7dc00"
+    },
+    {
+      "id": "devlog/flashy-ledger/98890d318e4f",
+      "at": "2026-10-10T05:29:47Z",
+      "summary": "Guard the chain head in the reference store, re-assert Minor at runtime, refuse self-transfers",
+      "commitSha": "98890d318e4f4119146a358a5d5bc31cc092de03",
+      "ref": "https://github.com/FlashyLabs/flashy-ledger/commit/98890d318e4f4119146a358a5d5bc31cc092de03"
+    },
     {
       "id": "devlog/flashy-ledger/a6e4735444b0",
       "at": "2026-09-15T17:44:23-04:00",

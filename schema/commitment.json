@@ -1,0 +1,54 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/FlashyLabs/flashy-ledger/schema/commitment.json",
+  "title": "Commitment",
+  "description": "What a day's snapshot commits to, as commit() in src/domain/merkle.ts returns it: the Merkle root over the entries, how many there were, the digest of the snapshot file, and the outstanding total. The total is stated beside the entries because committing to entries alone would let a set be published that does not sum to what the operator owes. commit() returns null for an empty set rather than a commitment to nothing. Every digest is lower-case hex with a 0x prefix, unlike the Entry hash in entry.json, which has none. Unknown keys are refused unless prefixed `x-`.",
+  "type": "object",
+  "properties": {
+    "date": {
+      "type": "string",
+      "minLength": 1,
+      "description": "The day the snapshot covers. commit() takes it as a caller-supplied string and checks nothing about its form."
+    },
+    "root": {
+      "$ref": "#/$defs/hex",
+      "description": "The Merkle root over the entries, leaves sorted by id in the order snapshot-entry.json states (UTF-16 code units): SHA256(0x00 || canonical) for a leaf, SHA256(0x01 || left || right) for a node, an odd node promoted rather than duplicated."
+    },
+    "entryCount": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 9007199254740991,
+      "description": "How many entries were committed. At least one: an empty set has no root."
+    },
+    "datasetSha256": {
+      "$ref": "#/$defs/hex",
+      "description": "sha256 of the snapshot file's bytes, as toJsonl() writes it. Rows are described by snapshot-entry.json."
+    },
+    "outstandingMinor": {
+      "$ref": "#/$defs/integerString",
+      "description": "The sum of every entry's amount, in minor units, as a decimal string: the outstanding liability. It is computed with BigInt() over the raw strings; see snapshot-entry.json for what that does and does not check."
+    },
+    "asset": {
+      "type": "string",
+      "minLength": 1,
+      "description": "The asset the commitment is for, as the caller names it."
+    }
+  },
+  "required": ["date", "root", "entryCount", "datasetSha256", "outstandingMinor", "asset"],
+  "patternProperties": {
+    "^x-": {}
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "hex": {
+      "type": "string",
+      "pattern": "^0x[0-9a-f]{64}$",
+      "description": "A sha256 digest: 0x, then 64 lower-case hexadecimal characters."
+    },
+    "integerString": {
+      "type": "string",
+      "pattern": "^(0|-?[1-9][0-9]*)$",
+      "description": "A signed integer in its one canonical decimal form, the same one snapshot-entry.json states for amount_minor. outstandingMinor is BigInt().toString() of a sum, so it is always in this form once the sum succeeds."
+    }
+  }
+}

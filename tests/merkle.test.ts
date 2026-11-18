@@ -203,11 +203,57 @@ describe('pinned vectors', () => {
 })
 
 describe('sortEntries, commit and sha256Hex', () => {
-  it('sortEntries is byte-wise ascending and does not mutate its input', () => {
+  it('sortEntries is ascending and does not mutate its input', () => {
     const input = [entry('b'), entry('a')]
     const sorted = sortEntries(input)
     expect(sorted.map((e) => e.id)).toEqual(['a', 'b'])
     expect(input.map((e) => e.id)).toEqual(['b', 'a'])
+  })
+
+  // schema/snapshot-entry.json states this order to a reader rebuilding the root
+  // in another language, so what it says is pinned here rather than inherited from
+  // a comment. `<` compares UTF-16 code units. That is the order of the ids' UTF-8
+  // bytes for ids at or below U+FFFF, and not for an id from U+10000 up set against
+  // one from U+E000 to U+FFFF — the header of merkle.ts and the 0.8.0 changelog say
+  // "byte-wise", which is only true of the first group. Changing this order changes
+  // every root a producer has published: a format change, not a fix.
+  describe('the order is UTF-16 code units, which is not the order of the UTF-8 bytes', () => {
+    const supplementary = '\u{10000}' // UTF-8 f0 90 80 80, UTF-16 d800 dc00
+    const bmp = '�' //            UTF-8 ef bf bd,     UTF-16 fffd
+    const utf8 = (s: string): Buffer => Buffer.from(s, 'utf8')
+
+    it('puts U+10000 before U+FFFD, the reverse of their bytes', () => {
+      expect(utf8(supplementary).toString('hex')).toBe('f0908080')
+      expect(utf8(bmp).toString('hex')).toBe('efbfbd')
+      expect(Buffer.compare(utf8(supplementary), utf8(bmp))).toBe(1)
+
+      const forward = sortEntries([entry(bmp), entry(supplementary)]).map((e) => e.id)
+      const backward = sortEntries([entry(supplementary), entry(bmp)]).map((e) => e.id)
+      expect(forward).toEqual([supplementary, bmp])
+      expect(backward).toEqual([supplementary, bmp])
+    })
+
+    it('carries into the snapshot file and the root, pinned from a hashlib computation', () => {
+      const set = [entry(bmp), entry(supplementary)]
+      expect(toJsonl(set).trimEnd().split('\n').map((line) => parseRow(line).id)).toEqual([
+        supplementary,
+        bmp,
+      ])
+      // SHA256(0x01 || leaf(U+10000 row) || leaf(U+FFFD row)), both rows
+      // FG|issuance|quest_completion|1000|2026-08-14T03:41:00Z, computed with
+      // Python hashlib outside this codebase. The byte-wise order would give
+      // 0x37a98208f7d8d3d334ac199640b04b0f26c27bbe3274130adc6a301f0b32ab14.
+      expect(merkleRoot(set)).toBe(
+        '0x80c879251a7dc775c78ddbd1ef96d6d052af5d42e235f6b0a20de35797c1bc41',
+      )
+      expect(merkleRoot([...set].reverse())).toBe(merkleRoot(set))
+    })
+
+    it('agrees with the byte order for ids at or below U+FFFF, ASCII included', () => {
+      const ids = ['gl_10', 'gl_2', 'GL_1', '', 'é', '߿', 'ࠀ', '', bmp, '￿', 'z']
+      const byBytes = [...ids].sort((a, b) => Buffer.compare(utf8(a), utf8(b)))
+      expect(sortEntries(ids.map((id) => entry(id))).map((e) => e.id)).toEqual(byBytes)
+    })
   })
 
   it('commit carries the outstanding total and the dataset digest', () => {

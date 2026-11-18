@@ -48,6 +48,14 @@ export class InMemoryLedgerStore implements TransactionalLedgerStore {
   appendAll(proposed: readonly ProposedEntry[]): Promise<readonly AppendResult[]> {
     const staged: Entry[] = []
     const results: AppendResult[] = []
+    // The chain head each candidate must follow: the published head of its
+    // (tenant, identity, asset), advanced by anything staged earlier in this
+    // batch. The Mongo adapter gets this from a unique index on
+    // (tenantId, identityId, assetId, previousHash); the reference
+    // implementation has to say it in code, or two appends that both read the
+    // same head both land and the fold goes negative — a guarantee production
+    // had and the executable specification did not.
+    const heads = new Map<string, string>()
 
     for (const candidate of proposed) {
       const existing = this.byKey.get(
@@ -58,8 +66,21 @@ export class InMemoryLedgerStore implements TransactionalLedgerStore {
         continue
       }
 
+      const chain = InMemoryLedgerStore.chainKey(candidate)
+      const head = heads.get(chain) ?? this.headOf(candidate)
+      if (candidate.previousHash !== head) {
+        // Rejected, not thrown: the port is a Promise, and a caller's
+        // `.catch` is where a lost race is handled. Nothing staged is published.
+        return Promise.reject(
+          new Error(
+            `Concurrent append to ${candidate.identityId}/${candidate.assetId}: the chain head moved. Re-read state and retry.`,
+          ),
+        )
+      }
+
       const entry: Entry = { ...candidate, id: `entry_${++this.sequence}` }
       staged.push(entry)
+      heads.set(chain, entry.hash)
       results.push({ entry, deduplicated: false })
     }
 
@@ -72,6 +93,17 @@ export class InMemoryLedgerStore implements TransactionalLedgerStore {
     }
 
     return Promise.resolve(results)
+  }
+
+  private static chainKey({ tenantId, identityId, assetId }: AccountRef): string {
+    return `${tenantId}\u0000${identityId}\u0000${assetId}`
+  }
+
+  /** The hash of the published head of one chain, or null when it has none. */
+  private headOf(ref: AccountRef): string | null {
+    const chain = InMemoryLedgerStore.chainKey(ref)
+    const head = this.entries.filter((e) => InMemoryLedgerStore.chainKey(e) === chain).at(-1)
+    return head?.hash ?? null
   }
 
   readState({ tenantId, identityId, assetId }: AccountRef): Promise<LedgerState> {

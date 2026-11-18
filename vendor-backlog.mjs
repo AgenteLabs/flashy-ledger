@@ -46,6 +46,12 @@ import { dirname, join } from 'node:path'
 export const BACKLOG_VERSION = '1'
 export const ITEM_KINDS = ['idea', 'task', 'bug', 'blocker', 'decision']
 export const ITEM_STATUSES = ['open', 'doing', 'blocked', 'done', 'dropped']
+// Declared once and read by both the validator and the writers. They were two
+// numbers in one function for months, which is how `file` and `revise` came to
+// mint items `check` refuses: an item is an intention, and an intention that
+// needs three thousand characters is a document filed in the wrong place.
+export const TITLE_MAX = 140
+export const DETAIL_MAX = 2000
 export const DECAY_DAYS = { idea: 180, task: 90, bug: 30, decision: 30, blocker: 14 }
 const DAY = 86_400_000
 
@@ -99,7 +105,9 @@ export function checkFragment(fragment) {
   const out = []
   const add = (code, subject) => out.push([code, subject])
 
-  if (fragment?.backlog !== BACKLOG_VERSION) add('bad-version')
+  // `intent` is the key since the format became IntentMesh's intent/1; `backlog`
+  // is the key it shipped under first and is accepted forever. Either, same version.
+  if ((fragment?.intent ?? fragment?.backlog) !== BACKLOG_VERSION) add('bad-version')
   if (!REPO_RE.test(fragment?.source ?? '')) add('bad-fragment-source')
   if (!ORG_RE.test(fragment?.org ?? '')) add('bad-fragment-org')
   if (!fragment?.generated || Number.isNaN(Date.parse(fragment.generated))) add('bad-generated')
@@ -115,8 +123,8 @@ export function checkFragment(fragment) {
     if (!ITEM_KINDS.includes(item.kind)) add('bad-kind', at)
     if (!ITEM_STATUSES.includes(item.status)) add('bad-status', at)
     if (!item.title?.trim()) add('no-title', at)
-    else if (item.title.length > 140) add('title-too-long', at)
-    if (item.detail && item.detail.length > 2000) add('detail-too-long', at)
+    else if (item.title.length > TITLE_MAX) add('title-too-long', at)
+    if (item.detail && item.detail.length > DETAIL_MAX) add('detail-too-long', at)
     if (item.owner !== undefined && !NODE_ID_RE.test(item.owner)) add('bad-owner', at)
     if (!REPO_RE.test(item.source?.repo ?? '')) add('bad-source', at)
     if (item.source?.ref !== undefined && !/^https:\/\//.test(item.source.ref)) add('bad-ref', at)
@@ -176,9 +184,27 @@ const writeItems = (items) => { mkdirSync(DIR, { recursive: true }); writeFileSy
 
 // ── Commands ────────────────────────────────────────────────────────────────
 
+// Every rule `checkFragment` enforces on a field, enforced at the moment the
+// field is written. The validator had all three and the writers had none, so
+// `file` and `revise` could both mint an item `check` refuses — and did:
+// two items carried a status the vocabulary has no word for, and two carried a
+// detail past the bound, which turned the Backlog workflow red on every run for
+// a day with the bad fragment already committed. A writer that can construct
+// what the validator refuses moves the failure from the keystroke to a
+// scheduled job somebody has stopped reading.
+function refuseBadField(status, title, detail) {
+  if (status !== undefined && !ITEM_STATUSES.includes(status))
+    throw new Error(`status must be one of ${ITEM_STATUSES.join(', ')}, got "${status}"`)
+  if (title !== undefined && String(title).trim().length > TITLE_MAX)
+    throw new Error(`title is ${String(title).trim().length} characters; the bound is ${TITLE_MAX}`)
+  if (detail !== undefined && String(detail).trim().length > DETAIL_MAX)
+    throw new Error(`detail is ${String(detail).trim().length} characters; the bound is ${DETAIL_MAX}. An item is an intention — put the evidence where evidence lives and cite it`)
+}
+
 /** Always private, always rev 1, expiry always derived. There is no visibility argument. */
 export function fileItem(config, { slug, kind, title, detail, owner, wants, ref, asserted = today(), by }) {
   if (!ITEM_KINDS.includes(kind)) throw new Error(`kind must be one of ${ITEM_KINDS.join(', ')}`)
+  refuseBadField(undefined, title, detail)
   const repo = config.source.replace(/^repo\//, '')
   const item = {
     id: `backlog/${repo}/${slug}`,
@@ -207,6 +233,7 @@ export function promoteItem(item, { by, to = 'partner', note, at = today() }) {
 }
 
 export function reviseItem(item, { by, status, title, detail, owner, wants, asserted = today() }) {
+  refuseBadField(status, title, detail)
   const next = { ...item, rev: item.rev + 1, assertedBy: by, asserted, expires: expiryFor(item.kind, asserted) }
   if (status) next.status = status
   if (title) next.title = String(title).trim()
@@ -232,7 +259,10 @@ export function reviseItem(item, { by, status, title, detail, owner, wants, asse
 }
 
 export function fragmentOf(config, items, generated = new Date().toISOString()) {
-  return { backlog: BACKLOG_VERSION, source: config.source, org: config.org, generated, items }
+  // Both keys while the estate's vendored copies catch up: a reader holding the
+  // pre-rename checker requires `backlog`; a reader of the spec reads `intent`.
+  // `backlog` leaves the emit once no copy needs it; it never leaves a reader.
+  return { intent: BACKLOG_VERSION, backlog: BACKLOG_VERSION, source: config.source, org: config.org, generated, items }
 }
 
 /**
@@ -325,8 +355,21 @@ function run(argv) {
   }
   if (command === 'emit') {
     const out = flag('out') ?? 'backlog.fragment.json'
+    // Validate BEFORE writing, never after. `emit` used to write whatever the
+    // items file held and report the count as success, so a bad item reached
+    // the fragment, the served projection and the commit, and the first thing
+    // that said so was `check` in a scheduled job — by which time the invalid
+    // record was already what the estate merged. Refusing here puts the failure
+    // at the keystroke, in the working tree, where the fix is one revise.
+    const fragment = fragmentOf(config, items)
+    const problems = checkFragment(fragment)
+    if (problems.length) {
+      for (const [code, subject] of problems) console.error(`✗ ${subject ?? ''} [${code}]`)
+      console.error(`refusing to emit: ${problems.length} problem(s). Fix the items with \`revise\` — hand-editing .backlog/items.json is what put them there.`)
+      process.exit(1)
+    }
     // The root output is the organisation's own full record — every tier.
-    writeFileSync(out, `${JSON.stringify(fragmentOf(config, items), null, 2)}\n`)
+    writeFileSync(out, `${JSON.stringify(fragment, null, 2)}\n`)
     console.log(`${items.length} items → ${out}`)
 
     // The served copy is the PUBLIC PROJECTION and never the full record.

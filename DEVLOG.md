@@ -3,6 +3,31 @@
 _This is the changelog. "Devlog" and "changelog" name the same document here —_
 _see `devlog/1` in `packages/shiplog/SPEC.md` if that reads like it needs reconciling._
 
+## 2026-11-05
+
+- Rename package to @flashynetwork/ledger, bump to 2.0.0 (#28) ([`eedd5bc4ce1e`](https://github.com/FlashyLabs/flashy-ledger/commit/eedd5bc4ce1e457255b61c7c922e9348c51abae9))
+
+## 2026-11-03
+
+- Document why settlement/1 does not reuse this spec's canonical form (#26) ([`31d7be84ea62`](https://github.com/FlashyLabs/flashy-ledger/commit/31d7be84ea62b516699707e9868452e432915e2d))
+
+## 2026-10-29
+
+- Merge pull request #24 from AgenteLabs/backlog-flashynetwork-item ([`73052e8ab486`](https://github.com/FlashyLabs/flashy-ledger/commit/73052e8ab486827a063b4ab34610c7be1bfda11f))
+
+## 2026-10-24
+
+- Merge pull request #20 from AgenteLabs/claude/dreamy-bell-2e5nq3 ([`972d1e846377`](https://github.com/FlashyLabs/flashy-ledger/commit/972d1e846377545c88b124769d540f8e3311409d))
+
+## 2026-10-14
+
+- Merge pull request #15 from FlashyLabs/claude/ceo-estate-dashboard-gmtgl8 ([`f956f7b7c35a`](https://github.com/FlashyLabs/flashy-ledger/commit/f956f7b7c35a14f274f894748b275c055baad621))
+- Merge pull request #14 from FlashyLabs/claude/flashy-ledger-architecture-audit-79az1h ([`ada08f666af5`](https://github.com/FlashyLabs/flashy-ledger/commit/ada08f666af584e299d09132ad49a5b717b7dc00))
+
+## 2026-10-10
+
+- Guard the chain head in the reference store, re-assert Minor at runtime, refuse self-transfers ([`98890d318e4f`](https://github.com/FlashyLabs/flashy-ledger/commit/98890d318e4f4119146a358a5d5bc31cc092de03))
+
 ## 2026-09-15
 
 - Re-vendor check-directory.mjs from canon (#12) ([`a6e4735444b0`](https://github.com/FlashyLabs/flashy-ledger/commit/a6e4735444b029fc03be6422c02d38cd112599f4))

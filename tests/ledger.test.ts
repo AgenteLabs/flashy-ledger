@@ -23,6 +23,7 @@ import {
   type Asset,
   type Entry,
   type LedgerState,
+  type Minor,
 } from '../src/index.js'
 
 const gold: Asset = {
@@ -132,6 +133,17 @@ describe('post', () => {
   it('is pure: the same inputs always produce the same hash', () => {
     expect(post(EMPTY, command()).hash).toBe(post(EMPTY, command()).hash)
   })
+
+  it('re-asserts the Minor brand at runtime, so a JSON body cannot hash a NaN, a fraction or a string into a chain', () => {
+    // The brand only exists at compile time. These are what a JavaScript
+    // caller actually hands in, and each one used to be posted: undefined
+    // became a NaN balance, 0.5 a fractional holding, "500" a string
+    // concatenated onto the balance.
+    const state: LedgerState = { balance: minor(1000), headHash: 'abc' }
+    for (const amount of [undefined, Number.NaN, 0.5, '500', -0.5] as unknown as Minor[]) {
+      expect(() => post(state, command({ amount, kind: 'SPEND' }))).toThrow(PrecisionError)
+    }
+  })
 })
 
 describe('hash chain', () => {
@@ -186,6 +198,40 @@ describe('transfers', () => {
     // The pair nets to zero: a transfer moves value, it does not create it.
     expect(debit.amount + credit.amount).toBe(0)
     expect(debit.idempotencyKey).not.toBe(credit.idempotencyKey)
+  })
+
+  it('refuses a transfer from an identity to itself, which would fork its chain and mint the amount', () => {
+    // Both legs are posted against one state. With 100 held, a self-transfer
+    // of 50 produced a debit to 50 and a credit to 150 on the same head — and
+    // a store that did not refuse the fork read the balance as 150.
+    const me = { state: { balance: minor(10000), headHash: 'h' }, identityId: 'a' }
+
+    expect(() =>
+      postTransfer(me, { ...me }, {
+        tenantId: 'flashy',
+        asset: gold,
+        amount: minor(5000),
+        source: { type: 'gift' },
+        idempotencyKey: 'gift:self',
+        occurredAt: AT,
+      }),
+    ).toThrow(expect.objectContaining({ code: 'SELF_TRANSFER' }))
+  })
+
+  it('re-asserts the Minor brand on a transfer amount before either leg is posted', () => {
+    const sender = { state: { balance: minor(1000), headHash: null }, identityId: 'a' }
+    const recipient = { state: { balance: minor(0), headHash: null }, identityId: 'b' }
+
+    expect(() =>
+      postTransfer(sender, recipient, {
+        tenantId: 'flashy',
+        asset: gold,
+        amount: '500' as unknown as Minor,
+        source: { type: 'gift' },
+        idempotencyKey: 'gift:string',
+        occurredAt: AT,
+      }),
+    ).toThrow(PrecisionError)
   })
 
   it('refuses a transfer the sender cannot fund', () => {
