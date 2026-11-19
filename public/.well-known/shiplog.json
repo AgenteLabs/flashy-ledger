@@ -2,7 +2,7 @@
   "shipped": "1",
   "source": "repo/flashy-ledger",
   "org": "org/flashy-ledger",
-  "generated": "2026-11-18T04:26:56.781Z",
+  "generated": "2026-11-19T04:27:04.921Z",
   "entries": [
     {
       "id": "ship/flashy-ledger/eedd5bc4ce1e",
@@ -249,21 +249,38 @@
       "digest": "cbe44ad3947a817aa72c2e494240f397645944328d935d510b1a67bcd05b4147"
     },
     {
-      "id": "ship/flashy-ledger/eac50d8d976a",
+      "id": "ship/flashy-ledger/1a8aba65e9c6",
       "repo": "repo/flashy-ledger",
-      "at": "2026-09-25T17:56:29Z",
+      "at": "2026-09-25T18:49:01Z",
       "kind": "infra",
-      "title": "Bump to 1.0.0 for npm publication",
+      "title": "Allow test failures for now",
       "by": [
-        "agent/claude"
+        "person/michael"
       ],
-      "asserted": "2026-10-10",
+      "asserted": "2026-11-19",
       "assertedBy": "agent/flashy-ledger-ci",
       "visibility": "public",
       "refs": {
-        "commit": "eac50d8d976a348a91c3c0c4a8fbf3870536f780"
+        "commit": "1a8aba65e9c63db160c1630f8d8d6abd361e385d"
       },
-      "digest": "67af0cc2108f6614dda6255619f12c8c18be886476de8b50aebec9a281649c60"
+      "digest": "735c0c81e86facc3fe9410e56e930aea602aa68d7825fc1dbd6be09e65286251"
+    },
+    {
+      "id": "ship/flashy-ledger/bf088c0d4d55",
+      "repo": "repo/flashy-ledger",
+      "at": "2026-09-25T18:46:15Z",
+      "kind": "other",
+      "title": "Simplify publish workflow to use npm directly",
+      "by": [
+        "person/michael"
+      ],
+      "asserted": "2026-11-19",
+      "assertedBy": "agent/flashy-ledger-ci",
+      "visibility": "public",
+      "refs": {
+        "commit": "bf088c0d4d552bdee615612425c38089b82f10bc"
+      },
+      "digest": "45a3b6fd82a0087ef28675480a9e7a9764fbb7fe06c37e6f195d99faaa9e4d30"
     },
     {
       "id": "ship/flashy-ledger/cf4d9bacae52",
@@ -281,6 +298,23 @@
         "commit": "cf4d9bacae52b5b59c99d4b689a1faced6322286"
       },
       "digest": "0c005303f7662f9f4578ef4f493083918acf9007ceccdd258081cd3259954dc1"
+    },
+    {
+      "id": "ship/flashy-ledger/eac50d8d976a",
+      "repo": "repo/flashy-ledger",
+      "at": "2026-09-25T17:56:29Z",
+      "kind": "infra",
+      "title": "Bump to 1.0.0 for npm publication",
+      "by": [
+        "agent/claude"
+      ],
+      "asserted": "2026-10-10",
+      "assertedBy": "agent/flashy-ledger-ci",
+      "visibility": "public",
+      "refs": {
+        "commit": "eac50d8d976a348a91c3c0c4a8fbf3870536f780"
+      },
+      "digest": "67af0cc2108f6614dda6255619f12c8c18be886476de8b50aebec9a281649c60"
     },
     {
       "id": "ship/flashy-ledger/da2bf20f80d3",

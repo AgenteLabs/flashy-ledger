@@ -2,7 +2,7 @@
   "devlog": "1",
   "source": "repo/flashy-ledger",
   "org": "org/flashy-ledger",
-  "generated": "2026-11-18T04:26:56.784Z",
+  "generated": "2026-11-19T04:27:04.924Z",
   "entries": [
     {
       "id": "devlog/flashy-ledger/eedd5bc4ce1e",
@@ -52,6 +52,20 @@
       "summary": "Guard the chain head in the reference store, re-assert Minor at runtime, refuse self-transfers",
       "commitSha": "98890d318e4f4119146a358a5d5bc31cc092de03",
       "ref": "https://github.com/FlashyLabs/flashy-ledger/commit/98890d318e4f4119146a358a5d5bc31cc092de03"
+    },
+    {
+      "id": "devlog/flashy-ledger/1a8aba65e9c6",
+      "at": "2026-09-25T18:49:01Z",
+      "summary": "Allow test failures for now",
+      "commitSha": "1a8aba65e9c63db160c1630f8d8d6abd361e385d",
+      "ref": "https://github.com/FlashyLabs/flashy-ledger/commit/1a8aba65e9c63db160c1630f8d8d6abd361e385d"
+    },
+    {
+      "id": "devlog/flashy-ledger/bf088c0d4d55",
+      "at": "2026-09-25T18:46:15Z",
+      "summary": "Simplify publish workflow to use npm directly",
+      "commitSha": "bf088c0d4d552bdee615612425c38089b82f10bc",
+      "ref": "https://github.com/FlashyLabs/flashy-ledger/commit/bf088c0d4d552bdee615612425c38089b82f10bc"
     },
     {
       "id": "devlog/flashy-ledger/a6e4735444b0",

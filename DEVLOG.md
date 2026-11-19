@@ -28,6 +28,11 @@ _see `devlog/1` in `packages/shiplog/SPEC.md` if that reads like it needs reconc
 
 - Guard the chain head in the reference store, re-assert Minor at runtime, refuse self-transfers ([`98890d318e4f`](https://github.com/FlashyLabs/flashy-ledger/commit/98890d318e4f4119146a358a5d5bc31cc092de03))
 
+## 2026-09-25
+
+- Allow test failures for now ([`1a8aba65e9c6`](https://github.com/FlashyLabs/flashy-ledger/commit/1a8aba65e9c63db160c1630f8d8d6abd361e385d))
+- Simplify publish workflow to use npm directly ([`bf088c0d4d55`](https://github.com/FlashyLabs/flashy-ledger/commit/bf088c0d4d552bdee615612425c38089b82f10bc))
+
 ## 2026-09-15
 
 - Re-vendor check-directory.mjs from canon (#12) ([`a6e4735444b0`](https://github.com/FlashyLabs/flashy-ledger/commit/a6e4735444b029fc03be6422c02d38cd112599f4))
