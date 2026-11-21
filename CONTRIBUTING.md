@@ -71,4 +71,4 @@ See [flashy.tools](https://flashy.tools) for the full package ecosystem and inte
 
 ## License
 
-Apache-2.0, © 2026 Flashy Labs
+Apache-2.0, © 2026 Agente Labs
